@@ -5,4 +5,4 @@ msiexec.exe /package "$env:HOMEPATH\AppData\Local\Temp\Pwsh.msi" /quiet ADD_EXPL
 Start-Sleep -Seconds 15
 echo "Downloading files for Part 2"
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/main/Part2.ps1" -OutFile "$env:HOMEPATH\AppData\Local\Temp\Part2.ps1"
-Start pwsh “$env:HOMEPATH\AppData\Local\Temp\Part2.ps1”
+pwsh “$env:HOMEPATH\AppData\Local\Temp\Part2.ps1”
