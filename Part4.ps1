@@ -4,5 +4,5 @@ Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Powercfg /batteryreport
 Start msedge "$env:HOMEPATH/battery-report.html"
-Start msedge –no-first-run https://retest.us/laptop-no-keypad
+Start msedge https://retest.us/laptop-no-keypad
 Start calc
