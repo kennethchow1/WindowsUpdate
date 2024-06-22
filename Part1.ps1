@@ -3,4 +3,5 @@ Invoke-WebRequest -Uri "https://github.com/PowerShell/PowerShell/releases/downlo
 echo "Powershell 7 Installing, Please Wait."
 msiexec.exe /package Pwsh.msi /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 REGISTER_MANIFEST=1 USE_MU=1 ENABLE_MU=1 ADD_PATH=1
 Start-Sleep -Seconds 25
-Start-Process -FilePath "C:\Program Files\Powershell\7\pwsh.exe" -ArgumentList "-ExecutionPolicy Unrestricted -C irm https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/main/Part2.ps1 | iex"
+Invoke-WebRequest -Uri "https://kennethchow1.github.io/WindowsUpdate/Final.lnk" -OutFile "$env:HOMEPATH\Desktop\Finalize.lnk"
+Start-Process -FilePath "C:\Program Files\Powershell\7\pwsh.exe" -ArgumentList "-ExecutionPolicy Unrestricted -C irm https://kennethchow1.github.io/WindowsUpdate/Part2.ps1 | iex"
