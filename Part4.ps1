@@ -1,4 +1,4 @@
-﻿echo "Starting Final Stage"
+﻿echo "Finishing updates..."
 Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
