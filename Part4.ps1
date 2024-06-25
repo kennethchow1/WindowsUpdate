@@ -22,7 +22,10 @@ $ActivationStatus = Get-CimInstance SoftwareLicensingProduct -Filter "Name like 
     }
 $LicenseResult
 Start-Sleep -Seconds 15
-Powercfg /batteryreport
+$Url = "https://www.nirsoft.net/utils/batteryinfoview.zip"
+$DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
+Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
+Start-Process -FilePath $DownloadZipFile\BatteryInfoView.exe
 Start msedge "$env:HOMEPATH/battery-report.html"
 Start msedge https://retest.us/laptop-no-keypad
 Start calc
