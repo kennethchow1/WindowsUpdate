@@ -27,4 +27,4 @@ $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
 Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
 Start-Process -FilePath $DownloadZipFile\BatteryInfoView.exe
 Start msedge https://retest.us/laptop-no-keypad
-Start calc
+
