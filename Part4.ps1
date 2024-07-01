@@ -21,6 +21,7 @@ $ActivationStatus = Get-CimInstance SoftwareLicensingProduct -Filter "Name like 
       default {"unknown"}
     }
 $LicenseResult
+echo "If it doesn't show as Licensed, you will have to manually activate Windows."
 Start-Sleep -Seconds 15
 $Url = "https://www.nirsoft.net/utils/batteryinfoview.zip"
 $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
