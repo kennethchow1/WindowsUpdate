@@ -5,7 +5,7 @@ Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Start-Sleep -Seconds 15
 echo "Activating Windows..."
-$key=(Get-WmiObject -Class SoftwareLicensingService).OA3xOriginalProductKey
+$key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
 iex "cscript /b C:\windows\system32\slmgr.vbs /upk"
 iex "cscript /b C:\windows\system32\slmgr.vbs /ipk $key"
 iex "cscript /b C:\windows\system32\slmgr.vbs /ato"
