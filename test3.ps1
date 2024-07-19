@@ -6,7 +6,7 @@ Invoke-WebRequest -Uri "https://github.com/ungoogled-software/ungoogled-chromium
 $sourceNugetExe = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 $targetNugetExe = "$rootPath\nuget.exe"
 Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
-Set-Alias nuget $targetNugetExe -Scope Global -Verbose
+Set-Alias nuget $targetNugetExe -Scope Global
 Expand-Archive -LiteralPath "$env:TEMP\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -DestinationPath "$env:TEMP\" -Force
 Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
