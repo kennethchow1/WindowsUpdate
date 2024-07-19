@@ -2,6 +2,8 @@ echo "Finishing updates..."
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_7th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 7th-10th Gen Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-6th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-6th Gen Drivers.lnk"
+Invoke-WebRequest -Uri "https://gitlab.com/api/v4/projects/44042130/packages/generic/librewolf/128.0-2/librewolf-128.0-2-windows-x86_64-portable.zip" -OutFile "$env:TEMP\librewolf-128.0-2-windows-x86_64-portable.zip"
+Expand-Archive -LiteralPath "$env:TEMP\librewolf-128.0-2-windows-x86_64-portable.zip" -DestinationPath "$env:TEMP\"
 Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
@@ -32,7 +34,7 @@ $Url = "https://www.nirsoft.net/utils/batteryinfoview.zip"
 $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
 Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
 Start-Process -FilePath $DownloadZipFile\BatteryInfoView.exe
-Start msedge https://retest.us/laptop-no-keypad, https://testmyscreen.com, https://getupdates.me/drivers
+Start-Process -FilePath "$env:TEMP\librewolf-128.0-2\LibreWolf-Portable.exe" https://retest.us/laptop-no-keypad, https://testmyscreen.com, https://getupdates.me/drivers
 # If running in the console, wait for input before closing.
 if ($Host.Name -eq "ConsoleHost")
 {
