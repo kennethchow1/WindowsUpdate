@@ -9,6 +9,8 @@ Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Start-Sleep -Seconds 15
+Start-Process -FilePath "$env:TEMP\librewolf-128.0-2\LibreWolf-Portable.exe" https://retest.us/laptop-no-keypad, https://testmyscreen.com, https://getupdates.me/drivers
+Start-Sleep -Seconds 10
 echo "Activating Windows..."
 $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
 iex "cscript /b C:\windows\system32\slmgr.vbs /upk"
@@ -33,7 +35,7 @@ $Url = "https://www.nirsoft.net/utils/batteryinfoview.zip"
 $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
 Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
 Start-Process -FilePath $DownloadZipFile\BatteryInfoView.exe
-Start-Process -FilePath "$env:TEMP\librewolf-128.0-2\LibreWolf-Portable.exe" https://retest.us/laptop-no-keypad, https://testmyscreen.com, https://getupdates.me/drivers
+
 # If running in the console, wait for input before closing.
 if ($Host.Name -eq "ConsoleHost")
 {
