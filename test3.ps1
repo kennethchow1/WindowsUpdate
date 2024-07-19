@@ -3,6 +3,7 @@ Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFi
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_7th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 7th-10th Gen Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-6th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-6th Gen Drivers.lnk"
 Invoke-WebRequest -Uri "https://github.com/ungoogled-software/ungoogled-chromium-windows/releases/download/126.0.6478.126-1.1/ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -OutFile "$env:TEMP\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.201 -Force
 Expand-Archive -LiteralPath "$env:TEMP\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -DestinationPath "$env:TEMP\" -Force
 Install-Module PSWindowsUpdate -Confirm:$false -force
