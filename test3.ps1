@@ -29,7 +29,6 @@ $ActivationStatus = Get-CimInstance SoftwareLicensingProduct -Filter "Name like 
     }
 $LicenseResult
 echo "If you are missing Intel Integrated GPU Drivers, please use the corresponding desktop shortcut for your CPU Generation."
-Unregister-ScheduledTask -TaskName 'Final' -Confirm:$false
 $Url = "https://www.nirsoft.net/utils/batteryinfoview.zip"
 $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
 Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
