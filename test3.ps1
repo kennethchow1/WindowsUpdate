@@ -13,7 +13,7 @@ Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Start-Sleep -Seconds 15
-Start-Process -FilePath "$env:TEMP\ungoogled-chromium_126.0.6478.126-1.1_windows\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad, https://testmyscreen.com, https://getupdates.me/drivers"
+Start-Process -FilePath "$env:TEMP\ungoogled-chromium_126.0.6478.126-1.1_windows\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://getupdates.me/drivers"
 Start-Sleep -Seconds 10
 echo "Activating Windows..."
 $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
