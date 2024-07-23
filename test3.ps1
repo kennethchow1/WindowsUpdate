@@ -2,18 +2,18 @@ echo "Finishing updates..."
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_7th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 7th-10th Gen Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-6th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-6th Gen Drivers.lnk"
-Invoke-WebRequest -Uri "https://github.com/ungoogled-software/ungoogled-chromium-windows/releases/download/126.0.6478.126-1.1/ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -OutFile ".\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip"
+Invoke-WebRequest -Uri "https://github.com/ungoogled-software/ungoogled-chromium-windows/releases/download/126.0.6478.126-1.1/ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -OutFile "$env:HOMEPATH\chromium_126.0.6478.126-1.1_windows_x64.zip"
 $sourceNugetExe = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 $targetNugetExe = "$rootPath\nuget.exe"
 Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
 Set-Alias nuget $targetNugetExe -Scope Global
-Expand-Archive -LiteralPath ".\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -DestinationPath ".\" -Force
+Expand-Archive -LiteralPath "$env:HOMEPATH\chromium_126.0.6478.126-1.1_windows_x64.zip" -DestinationPath "$env:HOMEPATH\" -Force
 Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Start-Sleep -Seconds 15
-Start-Process -FilePath ".\ungoogled-chromium_126.0.6478.126-1.1_windows\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://getupdates.me/drivers"
+Start-Process -FilePath "$env:HOMEPATH\ungoogled-chromium_126.0.6478.126-1.1_windows\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://getupdates.me/drivers"
 Start-Sleep -Seconds 10
 echo "Activating Windows..."
 $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
