@@ -7,7 +7,7 @@ $sourceNugetExe = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 $targetNugetExe = "$rootPath\nuget.exe"
 Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
 Set-Alias nuget $targetNugetExe -Scope Global
-Expand-Archive -LiteralPath "$env:HOMEPATH\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -DestinationPath ".\" -Force
+Expand-Archive -LiteralPath ".\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -DestinationPath ".\" -Force
 Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
