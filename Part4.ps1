@@ -2,11 +2,12 @@ echo "Finishing updates..."
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_7th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 7th-10th Gen Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-6th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-6th Gen Drivers.lnk"
-$LASTCHANGE_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Win_x64%2FLAST_CHANGE?alt=media"
-$REVISION=$(curl -s -S $LASTCHANGE_URL)
-$DOWNLOAD_CHROMIUM_URL="https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/$REVISION/chrome-win.zip"
-Invoke-WebRequest $DOWNLOAD_CHROMIUM_URL -OutFile "$env:HOMEPATH\chrome-win.zip"
-Expand-Archive -LiteralPath "$env:HOMEPATH\chrome-win.zip" -DestinationPath "$env:HOMEPATH\" -Force
+Invoke-WebRequest -Uri "https://github.com/ungoogled-software/ungoogled-chromium-windows/releases/download/126.0.6478.126-1.1/ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -OutFile "$env:HOMEPATH\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip"
+$sourceNugetExe = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
+$targetNugetExe = "$rootPath\nuget.exe"
+Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
+Set-Alias nuget $targetNugetExe -Scope Global
+Expand-Archive -LiteralPath "$env:HOMEPATH\ungoogled-chromium_126.0.6478.126-1.1_windows_x64.zip" -DestinationPath "$env:HOMEPATH\" -Force
 Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
@@ -36,7 +37,7 @@ $Url = "https://www.nirsoft.net/utils/batteryinfoview.zip"
 $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
 Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
 Start-Process -FilePath $DownloadZipFile\BatteryInfoView.exe
-Start-Process -FilePath "$env:HOMEPATH\chrome-win\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://getupdates.me/drivers"
+Start-Process -FilePath "$env:HOMEPATH\ungoogled-chromium_126.0.6478.126-1.1_windows\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://getupdates.me/drivers"
 # If running in the console, wait for input before closing.
 if ($Host.Name -eq "ConsoleHost")
 {
