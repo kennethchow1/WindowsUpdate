@@ -37,7 +37,7 @@ $Url = "https://www.nirsoft.net/utils/batteryinfoview.zip"
 $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
 Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
 Start-Process -FilePath $DownloadZipFile\BatteryInfoView.exe
-Start-Process -FilePath "$env:HOMEPATH\ungoogled-chromium_126.0.6478.126-1.1_windows\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://getupdates.me/drivers"
+Start-Process -FilePath "$env:HOMEPATH\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://getupdates.me/drivers"
 # If running in the console, wait for input before closing.
 if ($Host.Name -eq "ConsoleHost")
 {
