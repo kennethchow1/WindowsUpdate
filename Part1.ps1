@@ -8,7 +8,7 @@ Start-Sleep -Seconds 30
 Invoke-WebRequest -Uri "https://getupdates.me/Final.lnk" -OutFile "$env:HOMEPATH\Desktop\Finalize.lnk"
 Invoke-WebRequest -Uri "https://files.getupdates.me/chrome.zip" -OutFile "$env:HOMEPATH\chrome.zip"
 $sourceNugetExe = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
-$targetNugetExe = "$rootPath\nuget.exe"
+$targetNugetExe = "$env:HOMEPATH\nuget.exe"
 Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
 Set-Alias nuget $targetNugetExe -Scope Global
 Expand-Archive -LiteralPath "$env:HOMEPATH\chrome.zip" -DestinationPath "$env:HOMEPATH\" -Force
