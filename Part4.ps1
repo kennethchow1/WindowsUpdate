@@ -2,7 +2,7 @@ echo "Finishing updates..."
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_7th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 7th-10th Gen Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-6th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-6th Gen Drivers.lnk"
-#Invoke-WebRequest -Uri "https://getupdates.me/DisableAbsoluteHP.lnk" -OutFile "$env:HOMEPATH\Desktop\Disable HP Absolute.lnk"
+Invoke-WebRequest -Uri "https://getupdates.me/DisableAbsoluteHP.lnk" -OutFile "$env:HOMEPATH\Desktop\Disable HP Absolute.lnk"
 Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
