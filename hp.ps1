@@ -3,3 +3,6 @@ Start-Process -Wait -FilePath "$env:HOMEPATH\hp-cmsl.exe" -Argument "/VERYSILENT
 Set-ExecutionPolicy RemoteSigned
 Get-HPBIOSSetting -Name "Absolute Persistence Module Current State"
 Set-HPBIOSSettingValue -Name "Permanent Disable Absolute Persistence Module Set Once" -Value "Yes"
+echo "Rebooting... to apply changes"
+Start-Sleep -Seconds 15
+shutdown /r
