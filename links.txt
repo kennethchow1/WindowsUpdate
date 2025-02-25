@@ -1,4 +1,0 @@
-If you are still missing Intel Graphics Drivers, use the following links
-Intel 11th Gen and newer CPUs: https://downloadmirror.intel.com/827043/gfx_win_101.5762.exe
-Intel 7th Gen - 10th Gen CPUs: https://downloadmirror.intel.com/824226/gfx_win_101.2128.exe
-Intel 4th Gen - 6th Gen CPUs: https://downloadmirror.intel.com/30195/a08/win64_15.45.5174.exe
