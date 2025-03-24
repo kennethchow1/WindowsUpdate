@@ -1,1 +1,1 @@
-powershell -Command {irm https://get.activated.win | iex}
+powershell.exe -Command {irm https://get.activated.win | iex}
