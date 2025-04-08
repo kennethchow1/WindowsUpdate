@@ -46,6 +46,7 @@ check_internet() {
 
 get_internal_disk
 format_disk
+check_internet
 
 OFF = 0
 until [ "$OFF" == 1 ]; do
