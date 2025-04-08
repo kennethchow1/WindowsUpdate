@@ -1,8 +1,6 @@
 #!/bin/bash 
 INTERNAL_VOLUME_NAME="Mac hd"
 
-
-
 # Get the internal disk
 get_internal_disk() {
     echo "Detecting internal disks..."
@@ -40,18 +38,14 @@ format_disk() {
 check_internet() {
     echo "Checking for internet connection..."
     while ! ping -c 1 -t 5 1.1.1.1 >/dev/null 2>&1; do
-        echo "No internet connection detected."
-        read -n 1 -s -r -p "Please connect to the internet then press enter: "
-    done
-    echo "Internet connection detected."
+        echo "No internet connection detected. Connecting to Aaxl..."
+        "/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"
+	sleep 5
+	sntp -sS time.apple.com
 }
 
 get_internal_disk
 format_disk
-
-/Volumes/e/netsetupcatalina -setairportnetwork en0 Aaxl "\][poiuy"
-sleep 5
-sntp -sS time.apple.com
 
 OFF = 0
 until [ "$OFF" == 1 ]; do
