@@ -34,16 +34,22 @@ format_disk() {
     diskutil eraseDisk APFS "$INTERNAL_VOLUME_NAME" "$INTERNAL_DISK"
 }
 
+echo "Connecting to Aaxl..."
+
 "/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"
 sleep 5
+
+echo "Syncing Time"
 sntp -sS time.apple.com
 
 
 get_internal_disk
-format_disk
-check_internet
 
-OFF = 0
+echo "Formatting disk!"
+format_disk
+
+
+
 until [ "$OFF" == 1 ]; do
 	echo "Welcome! What would you like to do 1.Elevated Security 2.Install OS 3.Shutdown?" 
 	read userinput
