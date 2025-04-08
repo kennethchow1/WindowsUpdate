@@ -41,6 +41,7 @@ check_internet() {
         echo "No internet connection detected. Connecting to Aaxl..."
         "/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"
 	sntp -sS time.apple.com
+    done
 }
 
 get_internal_disk
