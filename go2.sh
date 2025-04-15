@@ -34,9 +34,16 @@ format_disk() {
     diskutil eraseDisk APFS "$INTERNAL_VOLUME_NAME" "$INTERNAL_DISK"
 }
 
-echo "Connecting to Aaxl..."
+check_internet() {
+    echo "Checking for internet connection..."
+    while ! ping -c 1 -t 5 1.1.1.1 >/dev/null 2>&1; do
+        echo "No internet connection detected."
+        echo "Connecting to Aaxl.."
+	"/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"
+    done
+    echo "Internet connection detected."
+}
 
-"/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"
 sleep 5
 
 echo "Syncing Time"
@@ -44,7 +51,6 @@ sntp -sS time.apple.com
 
 
 get_internal_disk
-
 echo "Formatting disk!"
 format_disk
 
