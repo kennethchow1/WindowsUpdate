@@ -41,9 +41,6 @@ echo "Connecting to Aaxl for redundancy."
 
 sleep 5
 
-echo "Syncing Time"
-sntp -sS time.apple.com
-
 
 get_internal_disk
 echo "Formatting disk!"
