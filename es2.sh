@@ -34,6 +34,8 @@ format_disk() {
     diskutil eraseDisk APFS "$INTERNAL_VOLUME_NAME" "$INTERNAL_DISK"
 }
 
+chmod +x /Volumes/e/netsetupcatalina
+
 echo "Connecting to Aaxl for redundancy."
 "/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"
 
