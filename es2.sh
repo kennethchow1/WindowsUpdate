@@ -37,7 +37,21 @@ format_disk() {
 chmod +x /Volumes/e/netsetupcatalina
 
 echo "Connecting to Aaxl for redundancy."
-"/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"
+
+# Try connecting using en0
+if ! "/Volumes/e/netsetupcatalina" -setairportnetwork en0 Aaxl "\][poiuy"; then
+    echo "en0 failed. Trying en1..."
+    
+    # Try connecting using en1 if en0 fails
+    if ! "/Volumes/e/netsetupcatalina" -setairportnetwork en1 Aaxl "\][poiuy"; then
+        echo "en1 also failed. Unable to connect."
+    else
+        echo "Connected successfully using en1."
+    fi
+else
+    echo "Connected successfully using en0."
+fi
+
 
 sleep 5
 
