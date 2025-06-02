@@ -12,8 +12,8 @@ Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 $endTime = Get-Date
 $logFile = "$env:HOMEPATH\Documents\timestamp.txt"
 Add-Content -Path $logFile -Value $separator
-Add-Content -Path $logFile -Value "Command started at: $startTime"
-Add-Content -Path $logFile -Value "Command completed at: $endTime"
+Add-Content -Path $logFile -Value "Update Part 2 started at: $startTime"
+Add-Content -Path $logFile -Value "Update Part 2 completed at: $endTime"
 Start-Sleep -Seconds 15
 echo "Activating Windows..."
 $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
