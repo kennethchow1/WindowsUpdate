@@ -1,4 +1,5 @@
 echo "Finishing updates..."
+$startTime = Get-Date
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_6th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 6th-10th Gen Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-5th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-5th Gen Drivers.lnk"
@@ -8,6 +9,11 @@ Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
+$endTime = Get-Date
+$logFile = "$env:HOMEPATH\Documents\timestamp.txt"
+Add-Content -Path $logFile -Value $separator
+Add-Content -Path $logFile -Value "Command started at: $startTime"
+Add-Content -Path $logFile -Value "Command completed at: $endTime"
 Start-Sleep -Seconds 15
 echo "Activating Windows..."
 $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
