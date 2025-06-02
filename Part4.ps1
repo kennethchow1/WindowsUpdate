@@ -11,6 +11,7 @@ Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 $endTime = Get-Date
 $logFile = "$env:HOMEPATH\Documents\timestamp.txt"
+$separator = "--------------------"
 Add-Content -Path $logFile -Value $separator
 Add-Content -Path $logFile -Value "Update Part 2 started at: $startTime"
 Add-Content -Path $logFile -Value "Update Part 2 completed at: $endTime"
