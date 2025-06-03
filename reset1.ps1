@@ -10,5 +10,4 @@ if(-not $nuget -or [version]$nuget.version -lt [version]$version){
     $null = Install-PackageProvider -Name NuGet -MinimumVersion $nuget.version -Force
 }
 Install-Module -Name PSWindowsUpdate
-Set-ExecutionPolicy –ExecutionPolicy RemoteSigned -force
 Reset-WUComponents
