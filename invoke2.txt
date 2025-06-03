@@ -190,3 +190,35 @@ for ($i = 1; $i -le $RetryAttempts; $i++) {
         }
     }
 }
+
+
+
+# Ensure PSWindowsUpdate is available
+if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
+    Install-Module -Name PSWindowsUpdate -Force -Scope CurrentUser
+}
+
+Import-Module PSWindowsUpdate
+
+# Run Install-WindowsUpdate and handle failure
+try {
+    Install-WindowsUpdate -AcceptAll -AutoReboot -ErrorAction Stop
+}
+catch {
+    Write-Warning "Install-WindowsUpdate failed: $($_.Exception.Message)"
+    
+    # Check if it's a known update error or proceed regardless
+    if ($_.Exception.Message -match "Post.*Search.*Update" -or $_) {
+        Write-Host "Running Reset-WUComponents to fix update issues..."
+        Reset-WUComponents
+
+        # Retry update
+        try {
+            Write-Host "Retrying Install-WindowsUpdate..."
+            Install-WindowsUpdate -AcceptAll -AutoReboot -ErrorAction Stop
+        }
+        catch {
+            Write-Error "Update failed again after Reset-WUComponents: $($_.Exception.Message)"
+        }
+    }
+}
