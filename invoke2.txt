@@ -1,0 +1,192 @@
+param (
+    [string]$DownloadUrl = "https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/PowerShell-7.4.2-win-x64.msi",
+    [string]$OutputFile = "Pwsh.msi",
+    [string]$WifiSSID = "YourSSID",
+    [string]$WifiPassword = "YourPassword",
+    [string]$WifiAdapterName = "Wi-Fi",
+    [int]$TimeoutSeconds = 15,
+    [int]$RetryAttempts = 3,
+    [switch]$DisableWifiAfterRecovery
+)
+
+# Tracks disabled Ethernet adapters
+$DisabledEthernetAdapters = @()
+
+function Download-Installer {
+    param (
+        [string]$Uri,
+        [string]$OutFile,
+        [int]$Timeout
+    )
+    try {
+        Write-Output "Starting download: $Uri"
+        $job = Start-Job {
+            param($u, $o)
+            Invoke-WebRequest -Uri $u -OutFile $o -UseBasicParsing
+        } -ArgumentList $Uri, $OutFile
+
+        if (Wait-Job $job -Timeout $Timeout) {
+            Receive-Job $job | Out-Null
+            Remove-Job $job
+            Write-Output "Download completed successfully."
+            return $true
+        } else {
+            Stop-Job $job
+            Remove-Job $job
+            Write-Output "Download timed out after $Timeout seconds."
+            return $false
+        }
+    } catch {
+        Write-Output "Download failed: $_"
+        return $false
+    }
+}
+
+function Disable-EthernetAdapters {
+    Write-Output "Looking for active Ethernet adapters..."
+    $global:DisabledEthernetAdapters = @()
+
+    $ethernetAdapters = Get-NetAdapter | Where-Object {
+        $_.Status -eq 'Up' -and $_.InterfaceDescription -notmatch 'Wi-Fi|Wireless'
+    }
+
+    foreach ($adapter in $ethernetAdapters) {
+        Write-Output "Disabling Ethernet adapter: $($adapter.Name)"
+        Disable-NetAdapter -Name $adapter.Name -Confirm:$false
+        $global:DisabledEthernetAdapters += $adapter.Name
+    }
+
+    Start-Sleep -Seconds 5
+}
+
+function Reenable-DisabledEthernetAdapters {
+    foreach ($adapterName in $global:DisabledEthernetAdapters) {
+        Write-Output "Re-enabling Ethernet adapter: $adapterName"
+        Enable-NetAdapter -Name $adapterName -Confirm:$false
+    }
+    Start-Sleep -Seconds 5
+}
+
+function Enable-Adapter {
+    param ([string]$AdapterName)
+    Write-Output "Enabling adapter: $AdapterName"
+    Get-NetAdapter -Name $AdapterName -ErrorAction SilentlyContinue | Enable-NetAdapter -Confirm:$false
+    Start-Sleep -Seconds 5
+}
+
+function Disable-Adapter {
+    param ([string]$AdapterName)
+    Write-Output "Disabling adapter: $AdapterName"
+    Get-NetAdapter -Name $AdapterName -ErrorAction SilentlyContinue | Disable-NetAdapter -Confirm:$false
+    Start-Sleep -Seconds 5
+}
+
+function Create-WifiProfile {
+    param (
+        [string]$SSID,
+        [string]$Password
+    )
+
+    $profileXml = @"
+<?xml version="1.0"?>
+<WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
+    <name>$SSID</name>
+    <SSIDConfig>
+        <SSID>
+            <name>$SSID</name>
+        </SSID>
+    </SSIDConfig>
+    <connectionType>ESS</connectionType>
+    <connectionMode>auto</connectionMode>
+    <MSM>
+        <security>
+            <authEncryption>
+                <authentication>WPA2PSK</authentication>
+                <encryption>AES</encryption>
+                <useOneX>false</useOneX>
+            </authEncryption>
+            <sharedKey>
+                <keyType>passPhrase</keyType>
+                <protected>false</protected>
+                <keyMaterial>$Password</keyMaterial>
+            </sharedKey>
+        </security>
+    </MSM>
+</WLANProfile>
+"@
+
+    $profilePath = "$env:TEMP\$SSID.xml"
+    $profileXml | Out-File -Encoding ASCII -FilePath $profilePath
+    netsh wlan add profile filename="$profilePath" user=current | Out-Null
+    Remove-Item $profilePath -Force
+}
+
+function Connect-ToWifi {
+    param (
+        [string]$SSID,
+        [string]$Password
+    )
+
+    Write-Output "Checking for existing Wi-Fi profile..."
+    $existingProfiles = netsh wlan show profiles | Select-String -Pattern "All User Profile\s*:\s*(.+)"
+    $profileExists = $existingProfiles.Matches.Groups[1].Value -contains $SSID
+
+    if (-not $profileExists) {
+        Write-Output "Creating Wi-Fi profile for SSID: $SSID"
+        Create-WifiProfile -SSID $SSID -Password $Password
+    } else {
+        Write-Output "Wi-Fi profile for $SSID already exists."
+    }
+
+    Write-Output "Connecting to Wi-Fi: $SSID"
+    netsh wlan connect name="$SSID" ssid="$SSID" | Out-Null
+    Start-Sleep -Seconds 10
+
+    $wifiStatus = netsh wlan show interfaces
+    if ($wifiStatus -match "^\s*SSID\s*:\s*$SSID") {
+        Write-Output "Successfully connected to Wi-Fi."
+        return $true
+    } else {
+        Write-Output "Failed to connect to Wi-Fi."
+        return $false
+    }
+}
+
+# Main retry logic
+$switchedToWifi = $false
+
+for ($i = 1; $i -le $RetryAttempts; $i++) {
+    Write-Output "`nAttempt $i of $RetryAttempts to download PowerShell MSI..."
+    $success = Download-Installer -Uri $DownloadUrl -OutFile $OutputFile -Timeout $TimeoutSeconds
+
+    if ($success) {
+        if ($switchedToWifi) {
+            Write-Output "Restoring Ethernet adapters..."
+            Reenable-DisabledEthernetAdapters
+            Start-Sleep -Seconds 10
+
+            if ($DisableWifiAfterRecovery) {
+                Write-Output "Disabling Wi-Fi after recovery..."
+                Disable-Adapter -AdapterName $WifiAdapterName
+            }
+        }
+        break
+    } else {
+        if (-not $switchedToWifi) {
+            Write-Output "Download failed. Switching to Wi-Fi..."
+            Disable-EthernetAdapters
+            Enable-Adapter -AdapterName $WifiAdapterName
+
+            $wifiConnected = Connect-ToWifi -SSID $WifiSSID -Password $WifiPassword
+
+            if (-not $wifiConnected) {
+                Write-Output "Wi-Fi connection failed. Aborting."
+                break
+            }
+
+            $switchedToWifi = $true
+        } else {
+            Write-Output "Retrying over Wi-Fi..."
+        }
+    }
+}
