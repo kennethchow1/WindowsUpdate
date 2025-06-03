@@ -1,6 +1,6 @@
 echo "Finishing updates..."
 # Delete the task so it only runs once
-$taskName = "RunOnceAfterReboot"
+$taskName = "RunMyShortcut"
 Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
 $startTime = Get-Date
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
