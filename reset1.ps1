@@ -9,5 +9,6 @@ if(-not $nuget -or [version]$nuget.version -lt [version]$version){
     Write-Verbose "Installing NuGet $($nuget.Version)"
     $null = Install-PackageProvider -Name NuGet -MinimumVersion $nuget.version -Force
 }
+Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
 Install-Module -Name PSWindowsUpdate
 Reset-WUComponents
