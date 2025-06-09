@@ -4,7 +4,7 @@ Invoke-WebRequest -Uri "https://github.com/PowerShell/PowerShell/releases/downlo
 echo "Powershell 7 Installing, Please Wait."
 msiexec.exe /package Pwsh.msi /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 REGISTER_MANIFEST=1 USE_MU=1 ENABLE_MU=1 ADD_PATH=1
 Start-Sleep -Seconds 30
-Invoke-WebRequest -Uri "https://getupdates.me/Finalize2.lnk" -OutFile "$env:HOMEPATH\Desktop\Finalize.lnk"
+Invoke-WebRequest -Uri "https://getupdates.me/Final.lnk" -OutFile "$env:HOMEPATH\Desktop\Finalize.lnk"
 Invoke-WebRequest -Uri "https://files.getupdates.me/chrome.zip" -OutFile "$env:HOMEPATH\chrome.zip"
 $version = "2.8.5.208"
 
