@@ -1,7 +1,4 @@
 echo "Finishing updates..."
-# Delete the task so it only runs once
-$taskName = "RunMyShortcut"
-Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
 $startTime = Get-Date
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
 Invoke-WebRequest -Uri "https://getupdates.me/Intel_6th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 6th-10th Gen Drivers.lnk"
@@ -12,6 +9,9 @@ Install-Module PSWindowsUpdate -Confirm:$false -force
 Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
+Start-Sleep -Seconds 10
+Set-DnsClientServerAddress -InterfaceIndex $activeAdapter.ifIndex -ResetServerAddresses
+Write-Host "DNS server reset to automatic (DHCP) on interface $($activeAdapter.Name)"
 $endTime = Get-Date
 $logFile = "$env:HOMEPATH\Documents\timestamp.txt"
 $separator = "--------------------"
