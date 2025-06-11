@@ -5,7 +5,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 # Download the main update script
-$scriptUrl = "https://yourdomain.com/scripts/WSUSUpdateMultiStage.ps1"
+$scriptUrl = "https://getupdates.me/WSUS.ps1"
 $localPath = "$env:TEMP\WSUSUpdateMultiStage.ps1"
 
 try {
