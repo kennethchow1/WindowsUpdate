@@ -128,7 +128,7 @@ function Schedule-NextRun {
 
     $username = "$env:COMPUTERNAME\Administrator"
     $psPath = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $action = New-ScheduledTaskAction -Execute $psPath -Argument "-ExecutionPolicy unrestricted -NoProfile -WindowStyle Normal -File `"$scriptPath`""
+    $action = New-ScheduledTaskAction -Execute $psPath -Argument "-ExecutionPolicy unrestricted -File `"$scriptPath`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $principal = New-ScheduledTaskPrincipal -UserId $username -LogonType Interactive -RunLevel Highest
     $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
