@@ -1,10 +1,10 @@
+Invoke-WebRequest -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath
+
 # --- Variables ---
 $wsusServer = "http://23.82.125.157"
 $taskName = "WSUSUpdateMultiStage"
 $scriptPath = "$env:HOMEPATH\WSUSUpdateMultiStage.ps1"
 $stateRegPath = "HKLM:\SOFTWARE\Custom\WSUSUpdateScript"
-
-Invoke-WebRequest -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath
 
 # --- Helper functions ---
 
