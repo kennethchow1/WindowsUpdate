@@ -1,5 +1,5 @@
 # --- Variables ---
-$wsusServer = "http://your-wsus-server"
+$wsusServer = "http://23.82.125.157"
 $taskName = "WSUSUpdateMultiStage"
 $scriptPath = $MyInvocation.MyCommand.Definition
 $stateRegPath = "HKLM:\SOFTWARE\Custom\WSUSUpdateScript"
