@@ -13,6 +13,8 @@ if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
     Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -File `"$scriptPath`"" -Verb RunAs
     exit
 }
+# Set execution policy to bypass for this session
+Set-ExecutionPolicy Bypass -Scope Process -Force
 
 # --- Variables ---
 $wsusServer = "http://23.82.125.157"
