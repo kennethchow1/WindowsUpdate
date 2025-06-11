@@ -95,11 +95,18 @@ function Install-Updates {
 
     try {
         do {
+            # Run once per boot — don’t keep looping
             $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
+
             if ($updates.Count -gt 0) {
                 Write-Log "Installing $($updates.Count) updates..."
                 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
-                Start-Sleep -Seconds 15
+                Write-Log "Updates installed, rebooting if required..."
+                Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false
+            } else {
+                Write-Log "No updates left to install. Proceeding to cleanup."
+                Set-State 2
+                Restart-Computer -Force
             }
         } while ($updates.Count -gt 0)
 
