@@ -1,6 +1,6 @@
 # --- Self-bootstrap: download and relaunch from correct path if needed ---
 $fullHomePath = Join-Path -Path $env:SystemDrive -ChildPath $env:HOMEPATH
-$logRoot = "$env:HOMEPATH\WSUSLogs"
+$logRoot = "$fullHomePath\WSUSLogs"
 $scriptPath = "$logRoot\WSUSUpdateMultiStage.ps1"
 
 if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
