@@ -1,6 +1,6 @@
 # --- Self-bootstrap: download and relaunch from correct path if needed ---
 $fullHomePath = Join-Path -Path $env:SystemDrive -ChildPath $env:HOMEPATH
-$logRoot = "$fullHomePath\WSUSLogs"
+$logRoot = "$env:HOMEPATH\WSUSLogs"
 $scriptPath = "$logRoot\WSUSUpdateMultiStage.ps1"
 
 if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
@@ -10,7 +10,7 @@ if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
     Write-Host "Downloading script to $scriptPath ..."
     Invoke-RestMethod -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath -UseBasicParsing
     Write-Host "Re-launching script from $scriptPath ..."
-    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -File `"$scriptPath`"" -Verb RunAs
     exit
 }
 # Set execution policy to bypass for this session
