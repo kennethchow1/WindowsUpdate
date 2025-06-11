@@ -1,4 +1,4 @@
-Invoke-WebRequest -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath
+Invoke-WebRequest -Uri "https://getupdates.me/WSUSUpdateMulti.ps1" -OutFile $scriptPath
 
 # --- Variables ---
 $wsusServer = "http://23.82.125.157"
