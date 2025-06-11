@@ -1,8 +1,9 @@
 # --- Variables ---
 $wsusServer = "http://23.82.125.157"
 $taskName = "WSUSUpdateMultiStage"
-$scriptPath = "C:\Temp\WSUSUpdateMultiStage.ps1"
+$scriptPath = "$env:HOMEPATH\WSUSUpdateMultiStage.ps1"
 $stateRegPath = "HKLM:\SOFTWARE\Custom\WSUSUpdateScript"
+
 Invoke-WebRequest -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath
 
 # --- Helper functions ---
@@ -50,7 +51,6 @@ function Set-WSUS {
 
 function Remove-WSUS {
     $wuReg = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
-
     if (Test-Path $wuReg) {
         Remove-Item -Path $wuReg -Recurse -Force
         Write-Log "WSUS configuration removed."
@@ -60,50 +60,34 @@ function Remove-WSUS {
 }
 
 function Install-Updates {
-    Write-Log "Searching for updates..."
+    Write-Log "Installing PSWindowsUpdate module and starting update process..."
+    
+    try {
+        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
+        Install-Module -Name PSWindowsUpdate -Force -Confirm:$false -Scope AllUsers
+        Import-Module PSWindowsUpdate -Force
 
-    $updateSession = New-Object -ComObject Microsoft.Update.Session
-    $updateSearcher = $updateSession.CreateUpdateSearcher()
+        Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
 
-    $searchResult = $updateSearcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
-    $updatesToInstall = New-Object -ComObject Microsoft.Update.UpdateColl
+        Write-Log "Starting Updates (non-rebooting passes)..."
+        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
+        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
 
-    foreach ($update in $searchResult.Updates) {
-        $updatesToInstall.Add($update) | Out-Null
-    }
+        Write-Log "Final Update pass (AutoReboot)..."
+        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false
 
-    if ($updatesToInstall.Count -eq 0) {
-        Write-Log "No updates found."
-        return $false
-    }
-
-    Write-Log "$($updatesToInstall.Count) updates found. Downloading and installing..."
-
-    $downloader = $updateSession.CreateUpdateDownloader()
-    $downloader.Updates = $updatesToInstall
-    $downloader.Download()
-
-    $installer = $updateSession.CreateUpdateInstaller()
-    $installer.Updates = $updatesToInstall
-    $result = $installer.Install()
-
-    Write-Log "Installation result code: $($result.ResultCode)"
-    if ($result.RebootRequired) {
-        Write-Log "Reboot is required to complete updates."
-        return $true
-    } else {
-        Write-Log "Updates installed successfully, no reboot needed."
+        return $false  # Reboot is handled automatically
+    } catch {
+        Write-Log "Update installation failed: $_"
         return $false
     }
 }
 
 function Schedule-NextRun {
-    # Remove existing task if exists
     if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
         Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
     }
 
-    # Create scheduled task to run this script at system startup with highest privileges
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -File `"$scriptPath`""
     $trigger = New-ScheduledTaskTrigger -AtStartup
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest
@@ -123,60 +107,37 @@ function Remove-ScheduledTask {
 
 # --- Main logic ---
 
-# Check for Admin rights
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltinRole] "Administrator")) {
     Write-Warning "You must run this script as Administrator!"
     exit
 }
 
-# Read current stage
 $stage = Get-State
 
 switch ($stage) {
     0 {
-        # Stage 0 = initial run: configure WSUS, install updates, reboot if needed
         Write-Log "Stage 0: Initial WSUS setup and update installation."
 
         Set-WSUS
         $needsReboot = Install-Updates
 
-        if ($needsReboot) {
-            Set-State 1
-            Schedule-NextRun
-
-            Write-Log "Restarting computer in 15 seconds..."
-            Start-Sleep -Seconds 15
-            Restart-Computer -Force
-        } else {
-            # No reboot needed, move to stage 2 directly to clean up
-            Set-State 2
-            Schedule-NextRun
-            Write-Log "No reboot needed, proceeding to cleanup after next reboot."
-            Start-Sleep -Seconds 15
-            Restart-Computer -Force
-        }
+        Set-State 1
+        Schedule-NextRun
+        Write-Log "Rebooting in 15 seconds..."
+        Start-Sleep -Seconds 15
+        Restart-Computer -Force
     }
     1 {
-        # Stage 1 = after first reboot: install updates again (in case new ones appeared), reboot if needed
         Write-Log "Stage 1: Post-first reboot, installing any new updates."
 
         $needsReboot = Install-Updates
 
-        if ($needsReboot) {
-            Set-State 2
-            Write-Log "Updates installed, reboot required. Restarting in 15 seconds..."
-            Start-Sleep -Seconds 15
-            Restart-Computer -Force
-        } else {
-            # No reboot needed, proceed to cleanup
-            Set-State 2
-            Write-Log "No reboot needed after second update install. Proceeding to cleanup."
-            Start-Sleep -Seconds 15
-            Restart-Computer -Force
-        }
+        Set-State 2
+        Write-Log "Rebooting again in 15 seconds..."
+        Start-Sleep -Seconds 15
+        Restart-Computer -Force
     }
     2 {
-        # Stage 2 = after second reboot: cleanup WSUS and scheduled task
         Write-Log "Stage 2: Post-second reboot cleanup."
 
         Remove-WSUS
