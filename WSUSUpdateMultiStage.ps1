@@ -124,32 +124,21 @@ function Install-Updates {
 }
 
 function Schedule-NextRun {
-    if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
-        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-    }
+    $runKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run"
+    $entryName = "WSUSUpdateMultiStage"
+    $command = "powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$notscript`""
 
-    $psPath = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $action = New-ScheduledTaskAction -Execute $psPath -Argument "-ExecutionPolicy unrestricted -File `"$notscript`""
-    $trigger = New-ScheduledTaskTrigger -AtLogOn
-
-    $user = "$env:USERNAME"
-    $logonType = "Interactive"
-
-    # Create the principal with the right logon type and user
-    $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType $logonType -RunLevel Highest
-
-    $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
-
-    Register-ScheduledTask -TaskName $taskName -InputObject $task
-
-    Write-Log "Task scheduled to run at Administrator logon for user: $user."
+    # Register the script to run on startup with visible window
+    Set-ItemProperty -Path $runKey -Name $entryName -Value $command -Force
+    Write-Log "Startup script registered in Run key: $notscript""
 }
 
 function Remove-ScheduledTask {
-    if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
-        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-        Write-Log "Scheduled task '$taskName' removed."
-    }
+    $runKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run"
+    $entryName = "WSUSUpdateMultiStage"
+
+    Remove-ItemProperty -Path $runKey -Name $entryName -ErrorAction SilentlyContinue
+    Write-Log "Run key entry '$entryName' removed."
 }
 
 # --- Main logic ---
