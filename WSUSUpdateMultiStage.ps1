@@ -80,6 +80,40 @@ function Remove-WSUS {
     }
 }
 
+function Reset-WUComponents {
+    Write-Log "Resetting Windows Update components..."
+
+    $services = @(
+        "wuauserv",   # Windows Update
+        "bits",       # Background Intelligent Transfer
+        "cryptsvc",   # Cryptographic services
+        "msiserver",  # Windows Installer (optional)
+        "trustedinstaller" # Windows Modules Installer
+    )
+
+    foreach ($svc in $services) {
+        Write-Log "Stopping service: $svc"
+        Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
+    }
+
+    Write-Log "Deleting SoftwareDistribution and CatRoot2 folders..."
+    Remove-Item -Recurse -Force "C:\Windows\SoftwareDistribution" -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force "C:\Windows\System32\catroot2" -ErrorAction SilentlyContinue
+
+    Write-Log "Resetting network & BITS config..."
+    netsh winsock reset | Out-Null
+    netsh winhttp reset proxy | Out-Null
+    bitsadmin /reset /allusers | Out-Null
+
+    foreach ($svc in $services) {
+        Write-Log "Starting service: $svc"
+        Start-Service -Name $svc -ErrorAction SilentlyContinue
+    }
+
+    Write-Log "Windows Update components have been reset."
+}
+
+
 function Install-Updates {
     Write-Log "Installing PSWindowsUpdate module..."
 
@@ -156,6 +190,8 @@ switch ($stage) {
         Set-State 1
         Schedule-NextRun
 
+        Write-Log "Resetting WindowsUpdate Module to ensure it works properly"
+        Reset-WUComponents
         Write-Log "Stage 0 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 0 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
