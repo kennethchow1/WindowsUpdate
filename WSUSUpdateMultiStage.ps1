@@ -131,6 +131,7 @@ function Schedule-NextRun {
     # Register the script to run on startup with visible window
     Set-ItemProperty -Path $runKey -Name $entryName -Value $command -Force
     Write-Log "Startup script registered in Run key: $notscript""
+    }
 }
 
 function Remove-ScheduledTask {
@@ -139,6 +140,7 @@ function Remove-ScheduledTask {
 
     Remove-ItemProperty -Path $runKey -Name $entryName -ErrorAction SilentlyContinue
     Write-Log "Run key entry '$entryName' removed."
+    }
 }
 
 # --- Main logic ---
