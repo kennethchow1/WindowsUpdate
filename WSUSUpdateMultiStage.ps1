@@ -3,6 +3,9 @@ $fullHomePath = Join-Path -Path $env:SystemDrive -ChildPath $env:HOMEPATH
 $logRoot = "$fullHomePath\WSUSLogs"
 $scriptPath = "$logRoot\WSUSUpdateMultiStage.ps1"
 $notscript = "$logRoot\Initial.ps1"
+$user = Get-WmiObject -ClassName Win32_ComputerSystem | Select-Object -ExpandProperty UserName
+$principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Highest
+$task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
 
 if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
     if (-not (Test-Path $logRoot)) {
