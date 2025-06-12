@@ -132,7 +132,7 @@ function Schedule-NextRun {
     $action = New-ScheduledTaskAction -Execute $psPath -Argument "-ExecutionPolicy unrestricted -File `"$notscript`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
 
-    $user = "$env:COMPUTERNAME\Administrator"
+    $user = "$env:USERNAME"
     $logonType = "Interactive"
 
     # Create the principal with the right logon type and user
