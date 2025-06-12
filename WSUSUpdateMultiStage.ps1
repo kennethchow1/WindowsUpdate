@@ -132,18 +132,8 @@ function Schedule-NextRun {
     $action = New-ScheduledTaskAction -Execute $psPath -Argument "-ExecutionPolicy unrestricted -File `"$notscript`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
 
-    # Try to get the currently logged on user
-    $user = (Get-WmiObject -ClassName Win32_ComputerSystem).UserName
-
-    # If no user found, fallback to SYSTEM
-    if ([string]::IsNullOrEmpty($user)) {
-        Write-Verbose "No logged-in user found; using SYSTEM account."
-        $user = "SYSTEM"
-        $logonType = "ServiceAccount"
-    }
-    else {
-        $logonType = "Interactive"
-    }
+    $user = "concept"
+    $logonType = "Interactive"
 
     # Create the principal with the right logon type and user
     $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType $logonType -RunLevel Highest
