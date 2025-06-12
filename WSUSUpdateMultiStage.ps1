@@ -129,13 +129,30 @@ function Schedule-NextRun {
     }
 
     $psPath = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy unrestricted -File `"$notscript`""
+    $action = New-ScheduledTaskAction -Execute $psPath -Argument "-ExecutionPolicy unrestricted -File `"$notscript`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
-    $user = Get-WmiObject -ClassName Win32_ComputerSystem | Select-Object -ExpandProperty UserName
-    $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Highest
+
+    # Try to get the currently logged on user
+    $user = (Get-WmiObject -ClassName Win32_ComputerSystem).UserName
+
+    # If no user found, fallback to SYSTEM
+    if ([string]::IsNullOrEmpty($user)) {
+        Write-Verbose "No logged-in user found; using SYSTEM account."
+        $user = "SYSTEM"
+        $logonType = "ServiceAccount"
+    }
+    else {
+        $logonType = "Interactive"
+    }
+
+    # Create the principal with the right logon type and user
+    $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType $logonType -RunLevel Highest
+
     $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
-    Register-ScheduledTask $taskName -InputObject $task
-    Write-Log "Task scheduled to run at Administrator logon."
+
+    Register-ScheduledTask -TaskName $taskName -InputObject $task
+
+    Write-Log "Task scheduled to run at Administrator logon for user: $user."
 }
 
 function Remove-ScheduledTask {
