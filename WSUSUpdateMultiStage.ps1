@@ -186,6 +186,17 @@ $stage = Get-State
 switch ($stage) {
     0 {
         Write-Log "Stage 0: Configuring WSUS and starting update process."
+        $downloadUrl = "https://example.com/tools.zip"
+        $savePath = "$env:HOMEPATH\Downloads\tools.zip"
+
+        if (-not (Test-Path $savePath)) {
+            Write-Log "Starting background download of $downloadUrl"
+            Start-Job -ScriptBlock {
+                Invoke-WebRequest -Uri "https://example.com/tools.zip" -OutFile "$env:HOMEPATH\Downloads\tools.zip" -UseBasicParsing
+            }
+        } else {
+            Write-Log "Download already exists, skipping."
+        }
         Set-WSUS
         Set-State 1
         Schedule-NextRun
