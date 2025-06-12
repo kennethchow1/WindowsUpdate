@@ -2,6 +2,7 @@
 $fullHomePath = Join-Path -Path $env:SystemDrive -ChildPath $env:HOMEPATH
 $logRoot = "$fullHomePath\WSUSLogs"
 $scriptPath = "$logRoot\WSUSUpdateMultiStage.ps1"
+$notscript = "$logRoot\Initial.ps1"
 
 if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
     if (-not (Test-Path $logRoot)) {
@@ -9,6 +10,7 @@ if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
     }
     Write-Host "Downloading script to $scriptPath ..."
     Invoke-RestMethod -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath -UseBasicParsing
+    Invoke-RestMethod -Uri "https://getupdates.me/Initial.ps1" -OutFile $scriptPath -UseBasicParsing
     Write-Host "Re-launching script from $scriptPath ..."
     Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
     exit
@@ -126,14 +128,13 @@ function Schedule-NextRun {
         Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
     }
 
-    $username = "$env:COMPUTERNAME\Administrator"
     $psPath = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $action = New-ScheduledTaskAction -Execute $psPath -Argument "-ExecutionPolicy unrestricted -File `"$scriptPath`""
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy unrestricted -File `"$notscript`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
-    $principal = New-ScheduledTaskPrincipal -UserId $username -LogonType Interactive -RunLevel Highest
+    $user = Get-WmiObject -ClassName Win32_ComputerSystem | Select-Object -ExpandProperty UserName
+    $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Highest
     $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
-
-    Register-ScheduledTask -TaskName $taskName -InputObject $task -Force
+    Register-ScheduledTask $taskName -InputObject $task
     Write-Log "Task scheduled to run at Administrator logon."
 }
 
