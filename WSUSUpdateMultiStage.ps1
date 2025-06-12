@@ -124,23 +124,20 @@ function Install-Updates {
 }
 
 function Schedule-NextRun {
-    $runKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run"
+    $runOnceKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
     $entryName = "WSUSUpdateMultiStage"
     $command = "powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$notscript`""
 
-    # Register the script to run on startup with visible window
-    Set-ItemProperty -Path $runKey -Name $entryName -Value $command -Force
-    Write-Log "Startup script registered in Run key: $notscript""
-    }
+    Set-ItemProperty -Path $runOnceKey -Name $entryName -Value $command -Force
+    Write-Log "One-time startup script registered via RunOnce: $notscript"
 }
 
 function Remove-ScheduledTask {
-    $runKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run"
+    $runOnceKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
     $entryName = "WSUSUpdateMultiStage"
 
-    Remove-ItemProperty -Path $runKey -Name $entryName -ErrorAction SilentlyContinue
-    Write-Log "Run key entry '$entryName' removed."
-    }
+    Remove-ItemProperty -Path $runOnceKey -Name $entryName -ErrorAction SilentlyContinue
+    Write-Log "RunOnce entry '$entryName' removed (if present)."
 }
 
 # --- Main logic ---
