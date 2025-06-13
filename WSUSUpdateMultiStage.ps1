@@ -160,10 +160,12 @@ function Install-Updates {
 function Schedule-NextRun {
     $runOnceKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
     $entryName = "WSUSUpdateMultiStage"
-    $command = "powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$notscript`""
+
+    # Use cmd.exe to launch PowerShell visibly but non-blocking
+    $command = "cmd.exe /c start powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$notscript`""
 
     Set-ItemProperty -Path $runOnceKey -Name $entryName -Value $command -Force
-    Write-Log "One-time startup script registered via RunOnce: $notscript"
+    Write-Log "RunOnce entry added to launch PowerShell after reboot: $command"
 }
 
 function Remove-ScheduledTask {
@@ -192,7 +194,7 @@ switch ($stage) {
         $extractPath = "$env:HOMEPATH\chrome"
 
         if (-not (Test-Path $zipPath)) {
-            Write-Log "Starting background download of $downloadUrl"
+            Write-Log "Starting background download of Chrome"
 
             Start-Job -ScriptBlock {
                 $zip = "$env:HOMEPATH\chrome.zip"
