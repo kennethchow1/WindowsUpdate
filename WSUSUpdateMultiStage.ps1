@@ -67,7 +67,7 @@ function Set-WSUS {
     # Allow fallback to Microsoft Update
     Remove-ItemProperty -Path $wuReg -Name "DoNotConnectToWindowsUpdateInternetLocations" -ErrorAction SilentlyContinue
 
-    Write-Log "WSUS configured to $wsusServer with Microsoft Update fallback."
+    Write-Log "WSUS configured with Microsoft Update fallback."
 }
 
 function Remove-WSUS {
