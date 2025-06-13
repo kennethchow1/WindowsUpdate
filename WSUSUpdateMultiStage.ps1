@@ -305,7 +305,7 @@ switch ($stage) {
         Restart-Computer -Force
     }
     3 {
-        Write-Log "Stage 2: Final cleanup phase."
+        Write-Log "Stage 3: Final cleanup phase."
         Remove-WSUS
         Remove-ScheduledTask
         Remove-State
