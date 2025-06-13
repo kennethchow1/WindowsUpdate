@@ -147,7 +147,6 @@ function Install-Updates {
         } while ($updates.Count -gt 0)
 
         Write-Log "Final update with AutoReboot if needed..."
-        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
         Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false
     } catch {
         Write-Log "Update error: $_"
