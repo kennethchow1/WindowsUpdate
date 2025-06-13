@@ -299,8 +299,6 @@ switch ($stage) {
         }
 
         Start-Process -FilePath "$env:HOMEPATH\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
-        Write-Host "`nPress ENTER to close this window."
-        Read-Host
     }
     default {
         Write-Warning "Unknown stage. Exiting."
