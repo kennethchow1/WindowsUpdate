@@ -292,6 +292,19 @@ switch ($stage) {
         Restart-Computer -Force
     }
     2 {
+        Write-Log "Stage 2: Second post-reboot update run."
+        Set-State 3
+        Schedule-NextRun
+        Set-DNS
+        Write-Log "Stage 2 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        Install-Updates
+        Write-Log "Stage 2 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        Reset-DNS
+        Write-Log "Rebooting in 15 seconds..."
+        Start-Sleep -Seconds 15
+        Restart-Computer -Force
+    }
+    3 {
         Write-Log "Stage 2: Final cleanup phase."
         Remove-WSUS
         Remove-ScheduledTask
