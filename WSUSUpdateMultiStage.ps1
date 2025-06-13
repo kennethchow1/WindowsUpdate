@@ -141,8 +141,6 @@ function Install-Updates {
                 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false
             } else {
                 Write-Log "No updates left to install. Proceeding to cleanup."
-                Set-State 2
-                Restart-Computer -Force
             }
         } while ($updates.Count -gt 0)
 
