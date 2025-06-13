@@ -165,7 +165,7 @@ function Schedule-NextRun {
     $command = "cmd.exe /c start powershell.exe -ExecutionPolicy Bypass -NoProfile -File `"$notscript`""
 
     Set-ItemProperty -Path $runOnceKey -Name $entryName -Value $command -Force
-    Write-Log "RunOnce entry added to launch PowerShell after reboot: $command"
+    Write-Log "RunOnce entry added to launch PowerShell after reboot"
 }
 
 function Remove-ScheduledTask {
