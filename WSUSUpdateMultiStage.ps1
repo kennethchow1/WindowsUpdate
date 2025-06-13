@@ -317,7 +317,7 @@ switch ($stage) {
             Write-Host "BatteryInfoView.exe not found after extraction!"
         }
 
-        Start-Process -FilePath "$env:HOMEPATH\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
+        Start-Process -FilePath "$env:USERPROFILE\chrome\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
     }
     default {
         Write-Warning "Unknown stage. Exiting."
