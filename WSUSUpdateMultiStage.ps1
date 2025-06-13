@@ -177,6 +177,34 @@ function Remove-ScheduledTask {
     Write-Log "RunOnce entry '$entryName' removed (if present)."
 }
 
+function Set-DNS {
+    Write-Log "Setting DNS server to 10.1.0.87"
+
+    $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+    foreach ($adapter in $adapters) {
+        try {
+            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses "10.1.0.87"
+            Write-Log "DNS set on adapter $($adapter.Name)"
+        } catch {
+            Write-Log "Failed to set DNS on adapter $($adapter.Name): $_"
+        }
+    }
+}
+
+function Reset-DNS {
+    Write-Log "Resetting DNS to automatic (DHCP)"
+
+    $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+    foreach ($adapter in $adapters) {
+        try {
+            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ResetServerAddresses
+            Write-Log "DNS reset on adapter $($adapter.Name)"
+        } catch {
+            Write-Log "Failed to reset DNS on adapter $($adapter.Name): $_"
+        }
+    }
+}
+
 # --- Main logic ---
 
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltinRole] "Administrator")) {
@@ -239,10 +267,11 @@ switch ($stage) {
 
         Write-Log "Resetting WindowsUpdate Module to ensure it works properly"
         Reset-WUComponents
+        Set-DNS
         Write-Log "Stage 0 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 0 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-
+        Reset-DNS
         Write-Log "Rebooting in 15 seconds..."
         Start-Sleep -Seconds 15
         Restart-Computer -Force
@@ -251,11 +280,11 @@ switch ($stage) {
         Write-Log "Stage 1: Post-reboot update run."
         Set-State 2
         Schedule-NextRun
-
+        Set-DNS
         Write-Log "Stage 1 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 1 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-
+        Reset-DNS
         Write-Log "Rebooting in 15 seconds..."
         Start-Sleep -Seconds 15
         Restart-Computer -Force
