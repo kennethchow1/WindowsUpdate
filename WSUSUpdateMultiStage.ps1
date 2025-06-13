@@ -276,9 +276,28 @@ switch ($stage) {
         $LicenseResult
         echo "If you are missing Intel Integrated GPU Drivers, please use the corresponding desktop shortcut for your CPU Generation."
         $Url = "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/refs/heads/main/batteryinfoview.zip"
-        $DownloadZipFile = "$env:TEMP" + $(Split-Path -Path $Url -Leaf)
+        $DownloadZipFile = Join-Path $env:TEMP "batteryinfoview.zip"
+        $ExtractFolder = Join-Path $env:TEMP "batteryinfoview_extracted"
+
+        # Download the zip
         Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
-        Start-Process -FilePath $DownloadZipFile\BatteryInfoView.exe
+
+        # Create extract folder if it doesn't exist
+        if (-not (Test-Path $ExtractFolder)) {
+            New-Item -ItemType Directory -Path $ExtractFolder | Out-Null
+        }
+
+        # Extract it
+        Expand-Archive -LiteralPath $DownloadZipFile -DestinationPath $ExtractFolder -Force
+
+        # Launch the .exe
+        $exePath = Join-Path $ExtractFolder "BatteryInfoView.exe"
+        if (Test-Path $exePath) {
+            Start-Process -FilePath $exePath
+        } else {
+            Write-Host "BatteryInfoView.exe not found after extraction!"
+        }
+
         Start-Process -FilePath "$env:HOMEPATH\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
         Write-Host "`nPress ENTER to close this window."
         Read-Host
