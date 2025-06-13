@@ -246,8 +246,6 @@ switch ($stage) {
         Write-Log "All updates applied. Cleanup complete."
         $CN = (Get-WmiObject -class win32_bios).SerialNumber
         Rename-Computer -NewName "PC-$CN" -WarningAction silentlyContinue
-        Invoke-WebRequest -Uri "https://files.getupdates.me/chrome.zip" -OutFile "$env:HOMEPATH\chrome.zip"
-        Expand-Archive -LiteralPath "$env:HOMEPATH\chrome.zip" -DestinationPath "$env:HOMEPATH\" -Force
         Invoke-WebRequest -Uri "https://getupdates.me/Chrome.lnk" -OutFile "$env:HOMEPATH\Desktop\Chrome.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_6th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 6th-10th Gen Drivers.lnk"
