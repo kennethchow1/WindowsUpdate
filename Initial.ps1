@@ -1,4 +1,3 @@
-Write-Log "Waiting for explorer.exe to start..."
 while (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
     Start-Sleep -Seconds 15
 }
