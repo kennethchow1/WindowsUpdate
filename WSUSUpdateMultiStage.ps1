@@ -137,7 +137,6 @@ function Install-Updates {
             if ($updates.Count -gt 0) {
                 Write-Log "Installing $($updates.Count) updates..."
                 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
-                Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
                 Write-Log "Updates installed, rebooting if required..."
                 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false
             } else {
