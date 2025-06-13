@@ -355,7 +355,20 @@ switch ($stage) {
         } else {
             Write-Host "BatteryInfoView.exe not found after extraction!"
         }
+        try {
+            $desktopPath = [Environment]::GetFolderPath('MyDocuments')
+            $logFilePath = "$logRoot\WSUSUpdateLog.txt"
+            $destLogFile = Join-Path -Path $desktopPath -ChildPath "WSUSUpdateLog.txt"
 
+            if (Test-Path $logFilePath) {
+                Copy-Item -Path $logFilePath -Destination $destLogFile -Force
+                Write-Log "Copied log file to $destLogFile"
+            } else {
+                Write-Log "Log file not found: $logFilePath"
+            }
+        } catch {
+            Write-Log "Failed to copy log file to desktop: $_"
+        }
         Start-Process -FilePath "$env:USERPROFILE\chrome\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
     }
     default {
