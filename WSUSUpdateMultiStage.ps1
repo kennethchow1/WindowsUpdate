@@ -154,7 +154,7 @@ function Install-Updates {
             Write-Log "Successfully installed: $updateTitle"
         } catch {
             $errMsg = $_.Exception.Message
-            Write-Log "ERROR installing $updateTitle: $errMsg"
+            Write-Log "ERROR installing $(updateTitle): $errMsg"
             "$((Get-Date -Format 'yyyy-MM-dd HH:mm:ss')) - $updateTitle - $errMsg" | Out-File -FilePath $failedUpdatesPath -Append -Encoding UTF8
         }
     }
