@@ -26,7 +26,16 @@ if (Test-Path $primaryPath) {
             Write-Output "Fallback Chrome path not found."
         }
     }
-} elseif (Test-Path $fallbackPath) {
+}
+elseif (Test-Path $fallbackPath) {
     try {
         Start-Process -FilePath $fallbackPath -ArgumentList "-no-default-browser-check $urls"
-        Write-Output "Launched Chrome from fallback pa
+        Write-Output "Launched Chrome from fallback path."
+    }
+    catch {
+        Write-Output "Failed to launch Chrome from fallback path: $_"
+    }
+}
+else {
+    Write-Output "Neither Chrome path exists."
+}
