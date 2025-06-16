@@ -259,7 +259,7 @@ switch ($stage) {
         }
         $CN = (Get-WmiObject -class win32_bios).SerialNumber
         Rename-Computer -NewName "PC-$CN" -WarningAction silentlyContinue
-        Set-WSUS
+        #Set-WSUS
         Set-State 1
         Schedule-NextRun
 
@@ -302,7 +302,7 @@ switch ($stage) {
     }
     3 {
         Write-Log "Stage 3: Final cleanup phase."
-        Remove-WSUS
+        #Remove-WSUS
         Remove-ScheduledTask
         Remove-State
 
