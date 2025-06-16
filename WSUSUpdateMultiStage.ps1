@@ -115,7 +115,13 @@ function Reset-WUComponents {
 
 
 function Install-Updates {
-    Write-Log "Installing PSWindowsUpdate module..."
+    Write-Log "========== Starting Windows Update Check: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =========="
+
+    $failedUpdatesPath = "$env:USERPROFILE\Desktop\FailedUpdates.txt"
+    $existingFailures = @()
+    if (Test-Path $failedUpdatesPath) {
+        $existingFailures = Get-Content $failedUpdatesPath
+    }
 
     try {
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers -ErrorAction Stop
@@ -127,33 +133,43 @@ function Install-Updates {
         return $false
     }
 
-    Write-Log "Starting update check at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-
-    try {
-        do {
-            # Run once per boot — don’t keep looping
-            $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
-
-            if ($updates.Count -gt 0) {
-                Write-Log "Installing $($updates.Count) updates..."
-                Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
-                Write-Log "Updates installed, rebooting if required..."
-                Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false
-            } else {
-                Write-Log "No updates left to install. Proceeding to cleanup."
-            }
-        } while ($updates.Count -gt 0)
-
-        Write-Log "Final update with AutoReboot if needed..."
-        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false
-    } catch {
-        Write-Log "Update error: $_"
-        return $false
+    $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
+    if ($updates.Count -eq 0) {
+        Write-Log "No updates found."
+        return $true
     }
 
-    Write-Log "Update finished at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    return $false
+    Write-Log "Found $($updates.Count) updates. Beginning individual installation..."
+
+    foreach ($update in $updates) {
+        $updateTitle = $update.Title
+        if ($existingFailures -contains $updateTitle) {
+            Write-Log "SKIPPING previously failed update: $updateTitle"
+            continue
+        }
+
+        Write-Log "Installing update: $updateTitle"
+        try {
+            Install-WindowsUpdate -Title $updateTitle -AcceptAll -IgnoreReboot -Confirm:$false -ErrorAction Stop | Out-Null
+            Write-Log "Successfully installed: $updateTitle"
+        } catch {
+            $errMsg = $_.Exception.Message
+            Write-Log "ERROR installing $updateTitle: $errMsg"
+            "$((Get-Date -Format 'yyyy-MM-dd HH:mm:ss')) - $updateTitle - $errMsg" | Out-File -FilePath $failedUpdatesPath -Append -Encoding UTF8
+        }
+    }
+
+    Write-Log "Final update pass to catch anything else (auto-reboot if needed)..."
+    try {
+        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false | Out-Null
+    } catch {
+        Write-Log "AutoReboot stage error: $_"
+    }
+
+    Write-Log "========== Update Process Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =========="
+    return $true
 }
+
 
 function Schedule-NextRun {
     $runOnceKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
