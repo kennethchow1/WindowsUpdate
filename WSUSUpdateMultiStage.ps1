@@ -307,6 +307,7 @@ switch ($stage) {
         Remove-State
 
         Write-Log "All updates applied. Cleanup complete."
+        Invoke-WebRequest -Uri "https://getupdates.me/BatteryInfo.lnk" -OutFile "$env:HOMEPATH\Desktop\View Battery Info.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen+_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_6th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 6th-10th Gen Drivers.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-5th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-5th Gen Drivers.lnk"
