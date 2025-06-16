@@ -307,12 +307,11 @@ switch ($stage) {
         Remove-State
 
         Write-Log "All updates applied. Cleanup complete."
-        Invoke-WebRequest -Uri "https://getupdates.me/Chrome.lnk" -OutFile "$env:HOMEPATH\Desktop\Chrome.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
+        Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen+_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_6th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 6th-10th Gen Drivers.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-5th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-5th Gen Drivers.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/DisableAbsoluteHP.lnk" -OutFile "$env:HOMEPATH\Desktop\Disable HP Absolute.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/ActivateWindows.lnk" -OutFile "$env:HOMEPATH\Desktop\MAS - Activate Windows.lnk"
+        Invoke-WebRequest -Uri "https://getupdates.me/MASActivateWindows.lnk" -OutFile "$env:HOMEPATH\Desktop\MAS - Activate Windows.lnk"
         echo "Activating Windows..."
         $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
         iex "cscript /b C:\windows\system32\slmgr.vbs /upk"
