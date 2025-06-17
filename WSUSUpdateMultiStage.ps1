@@ -235,7 +235,7 @@ function Wait-ForDNS {
                 return
             }
         } catch {
-            Write-Log "Attempt $i: DNS resolution failed. Retrying in $DelaySeconds seconds..."
+            Write-Log "Attempt $(i): DNS resolution failed. Retrying in $DelaySeconds seconds..."
             Start-Sleep -Seconds $DelaySeconds
         }
     }
