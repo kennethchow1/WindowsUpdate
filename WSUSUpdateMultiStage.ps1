@@ -285,7 +285,6 @@ switch ($stage) {
         Write-Log "Stage 0 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 0 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-        Reset-DNS
         Write-Log "Rebooting in 15 seconds..."
         Start-Sleep -Seconds 15
         Restart-Computer -Force
@@ -294,11 +293,9 @@ switch ($stage) {
         Write-Log "Stage 1: Post-reboot update run."
         Set-State 2
         Schedule-NextRun
-        Set-DNS
         Write-Log "Stage 1 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 1 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-        Reset-DNS
         Write-Log "Rebooting in 15 seconds..."
         Start-Sleep -Seconds 15
         Restart-Computer -Force
@@ -307,11 +304,9 @@ switch ($stage) {
         Write-Log "Stage 2: Second post-reboot update run."
         Set-State 3
         Schedule-NextRun
-        Set-DNS
         Write-Log "Stage 2 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 2 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-        Reset-DNS
         Write-Log "Rebooting in 15 seconds..."
         Start-Sleep -Seconds 15
         Restart-Computer -Force
@@ -321,7 +316,8 @@ switch ($stage) {
         #Remove-WSUS
         Remove-ScheduledTask
         Remove-State
-
+        Reset-DNS
+        Start-Sleep -Seconds 20
         Write-Log "All updates applied. Cleanup complete."
         Invoke-WebRequest -Uri "https://getupdates.me/BatteryInfo.lnk" -OutFile "$env:HOMEPATH\Desktop\View Battery Info.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen+_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
