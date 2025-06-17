@@ -338,8 +338,9 @@ switch ($stage) {
         Restart-Computer -Force
     }
     3 {
-        Write-Log "Stage 3: Final cleanup phase."
+        Write-Log "Stage 3: Final update and cleanup phase."
         #Remove-WSUS
+        Install-Updates
         Remove-ScheduledTask
         Remove-State
         Reset-DNS
