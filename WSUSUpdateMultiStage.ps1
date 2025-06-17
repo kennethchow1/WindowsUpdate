@@ -218,6 +218,32 @@ function Reset-DNS {
     }
 }
 
+function Wait-ForDNS {
+    param (
+        [string]$TestHost = "www.microsoft.com",
+        [int]$MaxRetries = 30,
+        [int]$DelaySeconds = 5
+    )
+
+    Write-Log "Checking DNS resolution for $TestHost..."
+
+    for ($i = 1; $i -le $MaxRetries; $i++) {
+        try {
+            $dnsResult = Resolve-DnsName -Name $TestHost -ErrorAction Stop
+            if ($dnsResult) {
+                Write-Log "DNS resolution succeeded on attempt $i."
+                return
+            }
+        } catch {
+            Write-Log "Attempt $i: DNS resolution failed. Retrying in $DelaySeconds seconds..."
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    Write-Log "DNS did not resolve after $MaxRetries attempts. Exiting script."
+    exit 1
+}
+
 # --- Main logic ---
 
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltinRole] "Administrator")) {
@@ -317,7 +343,7 @@ switch ($stage) {
         Remove-ScheduledTask
         Remove-State
         Reset-DNS
-        Start-Sleep -Seconds 20
+        Wait-ForDNS
         Write-Log "All updates applied. Cleanup complete."
         Invoke-WebRequest -Uri "https://getupdates.me/BatteryInfo.lnk" -OutFile "$env:HOMEPATH\Desktop\View Battery Info.lnk"
         Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen+_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
