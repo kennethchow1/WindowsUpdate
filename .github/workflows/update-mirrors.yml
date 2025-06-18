@@ -3,8 +3,11 @@ name: Update mirrors.json
 on:
   push:
     paths:
-      - 'mirrors/**/*'    # adjust to your mirror files folder
+      - 'mirrors/**/*'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   generate-mirrors:
@@ -16,8 +19,8 @@ jobs:
 
     - name: Generate mirrors.json
       run: |
-        FILES_DIR="mirrors"  # folder with your mirror files
-        DOMAIN="https://getupdates.me"
+        FILES_DIR="mirrors"
+        DOMAIN="https://your-cloudflare-domain.com"
 
         echo "{" > mirrors.json
 
