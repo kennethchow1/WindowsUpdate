@@ -52,7 +52,7 @@ function Download-WithFallback {
             Write-Host "Successfully downloaded $filename from $url"
             return $true
         } catch {
-            Write-Host "Failed from $url: $_"
+            Write-Host "Failed from $($url): $_"
         }
     }
 
