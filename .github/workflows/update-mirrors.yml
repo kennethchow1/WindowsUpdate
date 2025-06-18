@@ -14,13 +14,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout repository
       uses: actions/checkout@v3
+
+    - name: Check if mirrors folder has files
+      run: |
+        if [ -z "$(find mirrors -type f)" ]; then
+          echo "No files found in mirrors/. Skipping generation."
+          exit 0
+        fi
 
     - name: Generate mirrors.json
       run: |
         FILES_DIR="mirrors"
-        DOMAIN="https://getupdates.me"
+        DOMAIN="https://your-cloudflare-domain.com"
 
         echo "{" > mirrors.json
 
@@ -42,17 +49,15 @@ jobs:
         done
 
         echo "}" >> mirrors.json
+        echo "// Updated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> mirrors.json
 
-# Force a content change so git always sees a diff
-        echo "// updated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> mirrors.json
-
+        echo "Generated mirrors.json:"
         cat mirrors.json
 
-
-    - name: Commit mirrors.json
+    - name: Commit and push mirrors.json
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add mirrors.json
-        git diff --quiet && echo "No changes to commit" || git commit -m "Update mirrors.json"
+        git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update mirrors.json"
         git push origin main
