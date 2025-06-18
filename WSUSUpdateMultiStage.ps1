@@ -9,8 +9,8 @@ if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
         New-Item -ItemType Directory -Path $logRoot | Out-Null
     }
     Write-Host "Downloading script to $scriptPath ..."
-    Invoke-RestMethod -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath -UseBasicParsing
-    Invoke-WebRequest -Uri "https://getupdates.me/Initial.ps1" -OutFile "$notscript"
+    Download-WithFallback -filename "WSUSUpdateMultiStage.ps1" -destination $scriptPath
+    Download-WithFallback -filename "Initial.ps1" -destination $notscript
     Write-Host "Re-launching script from $scriptPath ..."
     Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
     exit
@@ -31,7 +31,7 @@ function Download-WithFallback {
         [string]$destination
     )
 
-    $mirrorListUrl = "https://your-cloudflare-domain.com/mirrors.json"
+    $mirrorListUrl = "https://getupdates.me/mirrors.json"
 
     try {
         $mirrors = Invoke-RestMethod -Uri $mirrorListUrl -UseBasicParsing
@@ -302,7 +302,7 @@ switch ($stage) {
 
             Start-Job -ScriptBlock {
                 param (
-                    $url, $zip, $dest, $logFilePath
+                    $filename, $zip, $dest, $logFilePath, $mirrorListUrl
                 )
 
                 function Log {
@@ -312,10 +312,40 @@ switch ($stage) {
                     Add-Content -Path $logFilePath -Value $entry
                 }
 
-                try {
-                    Log "Downloading Chrome from $url ..."
-                    Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
+                function Download-WithFallback {
+                    param (
+                        [string]$filename,
+                        [string]$destination
+                    )
 
+                    try {
+                        $mirrors = Invoke-RestMethod -Uri $mirrorListUrl -UseBasicParsing
+                    } catch {
+                        Log "Failed to load mirrors.json from $mirrorListUrl"
+                    return $false
+                    }
+
+                    if (-not $mirrors.$filename) {
+                        Log "No mirror entries found for '$filename'"
+                        return $false
+                    }
+
+                    foreach ($url in $mirrors.$filename) {
+                        Log "➡️ Trying $url ..."
+                        try {
+                            Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
+                            Log "✅ Downloaded $filename from $url"
+                            return $true
+                        } catch {
+                            Log "⚠️ Failed from $url: $($_.Exception.Message)"
+                        }
+                    }
+
+                    Log "❌ All mirrors failed for $filename"
+                    return $false
+                }
+
+                if (Download-WithFallback -filename $filename -destination $zip) {
                     if (Test-Path $dest) {
                         Log "Removing existing extracted folder: $dest"
                         Remove-Item -Path $dest -Recurse -Force -ErrorAction SilentlyContinue
@@ -323,14 +353,12 @@ switch ($stage) {
 
                     Log "Extracting Chrome to $dest"
                     Expand-Archive -Path $zip -DestinationPath $dest -Force
-
                     Log "Chrome download and extraction completed successfully."
-                } catch {
-                    Log "ERROR during Chrome background job: $($_.Exception.Message)"
+                } else {
+                    Log "Chrome download failed from all mirrors."
                 }
 
-            } -ArgumentList $downloadUrl, $zipPath, $extractPath, $logFile | Out-Null
-
+            } -ArgumentList "chrome.zip", $zipPath, $extractPath, $logFile, "https://getupdates.me/mirrors.json"
         } else {
             Write-Log "Chrome archive already exists at $zipPath, skipping download."
         }
