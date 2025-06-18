@@ -1,0 +1,49 @@
+name: Update mirrors.json
+
+on:
+  push:
+    paths:
+      - 'mirrors/**/*'    # adjust to your mirror files folder
+  workflow_dispatch:
+
+jobs:
+  generate-mirrors:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Generate mirrors.json
+      run: |
+        FILES_DIR="mirrors"  # folder with your mirror files
+        DOMAIN="https://your-cloudflare-domain.com"
+
+        echo "{" > mirrors.json
+
+        FIRST=true
+        for file in $(find $FILES_DIR -type f); do
+          filename=$(basename "$file")
+          cloudflare_url="$DOMAIN/$file"
+          github_url="https://raw.githubusercontent.com/${{ github.repository }}/main/$file"
+          if [ "$FIRST" = true ]; then
+            FIRST=false
+          else
+            echo "," >> mirrors.json
+          fi
+
+          echo "  \"$filename\": [" >> mirrors.json
+          echo "    \"$cloudflare_url\"," >> mirrors.json
+          echo "    \"$github_url\"" >> mirrors.json
+          echo "  ]" >> mirrors.json
+        done
+
+        echo "}" >> mirrors.json
+
+    - name: Commit mirrors.json
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add mirrors.json
+        git diff --quiet && echo "No changes to commit" || git commit -m "Update mirrors.json"
+        git push origin main
