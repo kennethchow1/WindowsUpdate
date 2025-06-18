@@ -292,7 +292,6 @@ switch ($stage) {
     0 {
         Write-Log "Stage 0: Configuring WSUS and starting update process."
 
-        $downloadUrl = "https://files.getupdates.me/chrome.zip"
         $zipPath = "$env:USERPROFILE\chrome.zip"
         $extractPath = "$env:USERPROFILE\chrome"
         $logFile = "$env:USERPROFILE\WSUSLogs\WSUSUpdateLog.txt"
