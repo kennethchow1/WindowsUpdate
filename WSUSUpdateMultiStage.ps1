@@ -36,12 +36,12 @@ function Download-WithFallback {
     try {
         $mirrors = Invoke-RestMethod -Uri $mirrorListUrl -UseBasicParsing
     } catch {
-        Write-Host "❌ Failed to load mirrors.json from $mirrorListUrl"
+        Write-Host "Failed to load mirrors.json from $mirrorListUrl"
         return $false
     }
 
     if (-not $mirrors.$filename) {
-        Write-Host "❌ No mirror entries found for '$filename'"
+        Write-Host "No mirror entries found for '$filename'"
         return $false
     }
 
@@ -49,14 +49,14 @@ function Download-WithFallback {
         Write-Host "➡️  Trying $url ..."
         try {
             Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -TimeoutSec 30
-            Write-Host "✅ Successfully downloaded $filename from $url"
+            Write-Host "Successfully downloaded $filename from $url"
             return $true
         } catch {
-            Write-Host "⚠️ Failed from $url: $_"
+            Write-Host "Failed from $url: $_"
         }
     }
 
-    Write-Host "❌ All mirror downloads failed for $filename"
+    Write-Host "All mirror downloads failed for $filename"
     return $false
 }
 
@@ -340,7 +340,7 @@ switch ($stage) {
                         }
                     }
 
-                    Log "❌ All mirrors failed for $filename"
+                    Log "All mirrors failed for $filename"
                     return $false
                 }
 
