@@ -336,7 +336,7 @@ switch ($stage) {
                             Log "Downloaded $filename from $url"
                             return $true
                         } catch {
-                            Log "Failed from $url: $($_.Exception.Message)"
+                            Log "Failed from $($url): $($_.Exception.Message)"
                         }
                     }
 
