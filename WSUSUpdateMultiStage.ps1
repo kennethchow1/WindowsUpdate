@@ -439,7 +439,7 @@ switch ($stage) {
         $ExtractFolder = Join-Path $env:TEMP "batteryinfoview_extracted"
 
         # Download the zip
-        Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
+        Download-WithFallback -filename "batteryinfoview.zip" -destination $DownloadZipFile
 
         # Create extract folder if it doesn't exist
         if (-not (Test-Path $ExtractFolder)) {
