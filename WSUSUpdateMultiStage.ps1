@@ -333,10 +333,10 @@ switch ($stage) {
                         Log "➡️ Trying $url ..."
                         try {
                             Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
-                            Log "✅ Downloaded $filename from $url"
+                            Log "Downloaded $filename from $url"
                             return $true
                         } catch {
-                            Log "⚠️ Failed from $url: $($_.Exception.Message)"
+                            Log "Failed from $url: $($_.Exception.Message)"
                         }
                     }
 
