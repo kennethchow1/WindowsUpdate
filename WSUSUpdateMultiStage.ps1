@@ -1,30 +1,3 @@
-# --- Self-bootstrap: download and relaunch from correct path if needed ---
-$fullHomePath = Join-Path -Path $env:SystemDrive -ChildPath $env:HOMEPATH
-$logRoot = "$fullHomePath\WSUSLogs"
-$scriptPath = "$logRoot\WSUSUpdateMultiStage.ps1"
-$notscript = "$logRoot\Initial.ps1"
-
-if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
-    if (-not (Test-Path $logRoot)) {
-        New-Item -ItemType Directory -Path $logRoot | Out-Null
-    }
-    Write-Host "Downloading script to $scriptPath ..."
-    Download-WithFallback -filename "WSUSUpdateMultiStage.ps1" -destination $scriptPath
-    Download-WithFallback -filename "Initial.ps1" -destination $notscript
-    Write-Host "Re-launching script from $scriptPath ..."
-    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
-    exit
-}
-# Set execution policy to bypass for this session
-Set-ExecutionPolicy unrestricted -Scope Process -Force
-
-# --- Variables ---
-$wsusServer = "http://23.82.125.157"
-$taskName = "WSUSUpdateMultiStage"
-$logFile = "$logRoot\WSUSUpdateLog.txt"
-$stateRegPath = "HKLM:\SOFTWARE\Custom\WSUSUpdateScript"
-
-# --- Helper functions ---
 function Download-WithFallback {
     param (
         [string]$filename,
@@ -60,6 +33,33 @@ function Download-WithFallback {
     return $false
 }
 
+# --- Self-bootstrap: download and relaunch from correct path if needed ---
+$fullHomePath = Join-Path -Path $env:SystemDrive -ChildPath $env:HOMEPATH
+$logRoot = "$fullHomePath\WSUSLogs"
+$scriptPath = "$logRoot\WSUSUpdateMultiStage.ps1"
+$notscript = "$logRoot\Initial.ps1"
+
+if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
+    if (-not (Test-Path $logRoot)) {
+        New-Item -ItemType Directory -Path $logRoot | Out-Null
+    }
+    Write-Host "Downloading script to $scriptPath ..."
+    Download-WithFallback -filename "WSUSUpdateMultiStage.ps1" -destination $scriptPath
+    Download-WithFallback -filename "Initial.ps1" -destination $notscript
+    Write-Host "Re-launching script from $scriptPath ..."
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
+    exit
+}
+# Set execution policy to bypass for this session
+Set-ExecutionPolicy unrestricted -Scope Process -Force
+
+# --- Variables ---
+$wsusServer = "http://23.82.125.157"
+$taskName = "WSUSUpdateMultiStage"
+$logFile = "$logRoot\WSUSUpdateLog.txt"
+$stateRegPath = "HKLM:\SOFTWARE\Custom\WSUSUpdateScript"
+
+# --- Helper functions ---
 function Write-Log {
     param ($msg)
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
