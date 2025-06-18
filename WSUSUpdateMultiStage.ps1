@@ -9,8 +9,8 @@ if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
         New-Item -ItemType Directory -Path $logRoot | Out-Null
     }
     Write-Host "Downloading script to $scriptPath ..."
-    Download-WithFallback -filename "WSUSUpdateMultiStage.ps1" -destination $scriptPath
-    Download-WithFallback -filename "Initial.ps1" -destination $notscript
+    Invoke-RestMethod -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath -UseBasicParsing
+    Invoke-WebRequest -Uri "https://getupdates.me/Initial.ps1" -OutFile "$notscript"
     Write-Host "Re-launching script from $scriptPath ..."
     Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
     exit
@@ -257,6 +257,7 @@ switch ($stage) {
     0 {
         Write-Log "Stage 0: Configuring WSUS and starting update process."
 
+        $downloadUrl = "https://files.getupdates.me/chrome.zip"
         $zipPath = "$env:USERPROFILE\chrome.zip"
         $extractPath = "$env:USERPROFILE\chrome"
         $logFile = "$env:USERPROFILE\WSUSLogs\WSUSUpdateLog.txt"
@@ -266,7 +267,7 @@ switch ($stage) {
 
             Start-Job -ScriptBlock {
                 param (
-                    $filename, $zip, $dest, $logFilePath, $mirrorListUrl
+                    $url, $zip, $dest, $logFilePath
                 )
 
                 function Log {
@@ -276,40 +277,10 @@ switch ($stage) {
                     Add-Content -Path $logFilePath -Value $entry
                 }
 
-                function Download-WithFallback {
-                    param (
-                        [string]$filename,
-                        [string]$destination
-                    )
+                try {
+                    Log "Downloading Chrome from $url ..."
+                    Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
 
-                    try {
-                        $mirrors = Invoke-RestMethod -Uri $mirrorListUrl -UseBasicParsing
-                    } catch {
-                        Log "Failed to load mirrors.json from $mirrorListUrl"
-                    return $false
-                    }
-
-                    if (-not $mirrors.$filename) {
-                        Log "No mirror entries found for '$filename'"
-                        return $false
-                    }
-
-                    foreach ($url in $mirrors.$filename) {
-                        Log "➡️ Trying $url ..."
-                        try {
-                            Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
-                            Log "Downloaded $filename from $url"
-                            return $true
-                        } catch {
-                            Log "Failed from $($url): $($_.Exception.Message)"
-                        }
-                    }
-
-                    Log "All mirrors failed for $filename"
-                    return $false
-                }
-
-                if (Download-WithFallback -filename $filename -destination $zip) {
                     if (Test-Path $dest) {
                         Log "Removing existing extracted folder: $dest"
                         Remove-Item -Path $dest -Recurse -Force -ErrorAction SilentlyContinue
@@ -317,12 +288,14 @@ switch ($stage) {
 
                     Log "Extracting Chrome to $dest"
                     Expand-Archive -Path $zip -DestinationPath $dest -Force
+
                     Log "Chrome download and extraction completed successfully."
-                } else {
-                    Log "Chrome download failed from all mirrors."
+                } catch {
+                    Log "ERROR during Chrome background job: $($_.Exception.Message)"
                 }
 
-            } -ArgumentList "chrome.zip", $zipPath, $extractPath, $logFile, "https://getupdates.me/mirrors.json"
+            } -ArgumentList $downloadUrl, $zipPath, $extractPath, $logFile | Out-Null
+
         } else {
             Write-Log "Chrome archive already exists at $zipPath, skipping download."
         }
@@ -404,7 +377,7 @@ switch ($stage) {
         $ExtractFolder = Join-Path $env:TEMP "batteryinfoview_extracted"
 
         # Download the zip
-        Download-WithFallback -filename "batteryinfoview.zip" -destination $DownloadZipFile
+        Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
 
         # Create extract folder if it doesn't exist
         if (-not (Test-Path $ExtractFolder)) {
