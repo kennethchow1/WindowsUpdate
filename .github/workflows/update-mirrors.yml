@@ -20,7 +20,7 @@ jobs:
     - name: Generate mirrors.json
       run: |
         FILES_DIR="mirrors"
-        DOMAIN="https://files.getupdates.me"
+        DOMAIN="https://getupdates.me"
 
         echo "{" > mirrors.json
 
