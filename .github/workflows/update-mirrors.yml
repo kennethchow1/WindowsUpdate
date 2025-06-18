@@ -17,7 +17,7 @@ jobs:
     - name: Generate mirrors.json
       run: |
         FILES_DIR="mirrors"  # folder with your mirror files
-        DOMAIN="https://your-cloudflare-domain.com"
+        DOMAIN="https://getupdates.me"
 
         echo "{" > mirrors.json
 
