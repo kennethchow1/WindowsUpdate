@@ -1,38 +1,3 @@
-function Download-WithFallback {
-    param (
-        [string]$filename,
-        [string]$destination
-    )
-
-    $mirrorListUrl = "https://getupdates.me/mirrors.json"
-
-    try {
-        $mirrors = Invoke-RestMethod -Uri $mirrorListUrl -UseBasicParsing
-    } catch {
-        Write-Host "Failed to load mirrors.json from $mirrorListUrl"
-        return $false
-    }
-
-    if (-not $mirrors.$filename) {
-        Write-Host "No mirror entries found for '$filename'"
-        return $false
-    }
-
-    foreach ($url in $mirrors.$filename) {
-        Write-Host "➡️  Trying $url ..."
-        try {
-            Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -TimeoutSec 30
-            Write-Host "Successfully downloaded $filename from $url"
-            return $true
-        } catch {
-            Write-Host "Failed from $($url): $_"
-        }
-    }
-
-    Write-Host "All mirror downloads failed for $filename"
-    return $false
-}
-
 # --- Self-bootstrap: download and relaunch from correct path if needed ---
 $fullHomePath = Join-Path -Path $env:SystemDrive -ChildPath $env:HOMEPATH
 $logRoot = "$fullHomePath\WSUSLogs"
