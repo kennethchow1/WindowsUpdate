@@ -1,0 +1,22 @@
+{
+  "batteryinfoview.zip": [
+    "https://your-cloudflare-domain.com/mirrors/batteryinfoview.zip",
+    "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/main/mirrors/batteryinfoview.zip"
+  ]
+,
+  "WSUSUpdateMultiStage.ps1": [
+    "https://your-cloudflare-domain.com/mirrors/WSUSUpdateMultiStage.ps1",
+    "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/main/mirrors/WSUSUpdateMultiStage.ps1"
+  ]
+,
+  "placeholder.txt": [
+    "https://your-cloudflare-domain.com/mirrors/placeholder.txt",
+    "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/main/mirrors/placeholder.txt"
+  ]
+,
+  "Initial.ps1": [
+    "https://your-cloudflare-domain.com/mirrors/Initial.ps1",
+    "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/main/mirrors/Initial.ps1"
+  ]
+}
+// Updated at 2025-06-18T04:21:46Z
