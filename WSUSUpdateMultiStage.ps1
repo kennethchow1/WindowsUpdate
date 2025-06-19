@@ -419,8 +419,12 @@ switch ($stage) {
         # Format timestamp as yyyyMMdd-HHmmss
                 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
-        # Create filename: SERIAL-TIMESTAMP.txt
-                $fileName = "$serial-$timestamp.txt"
+                # Create filename: SERIAL-TIMESTAMP.txt or TIMESTAMP.txt if serial is empty
+                if ([string]::IsNullOrEmpty($serial)) {
+                    $fileName = "$timestamp.txt"
+                } else {
+                    $fileName = "$serial-$timestamp.txt"
+                }
 
         # Construct upload URL
                 $uploadUrl = "https://logs.getupdates.me/$fileName"
