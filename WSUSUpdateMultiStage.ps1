@@ -113,6 +113,50 @@ function Reset-WUComponents {
     Write-Log "Windows Update components have been reset."
 }
 
+function Wait-ForInternet {
+    param (
+        [string]$TestUrl = "https://www.microsoft.com",
+        [int]$MaxRetries = 6,
+        [int]$DelaySeconds = 5
+    )
+
+    Write-Log "Waiting for internet connectivity ($TestUrl)..."
+
+    for ($i = 1; $i -le $MaxRetries; $i++) {
+        try {
+            $res = Invoke-WebRequest -Uri $TestUrl -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+            if ($res.StatusCode -eq 200) {
+                Write-Log "Internet check passed on attempt $i."
+                return
+            }
+        } catch {
+            Write-Log "Internet check failed (attempt $i). Retrying in $DelaySeconds seconds..."
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    throw "Internet did not recover after $MaxRetries attempts."
+}
+
+function Restart-NetworkAdapter {
+    Write-Log "Restarting all active network adapters..."
+
+    $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
+
+    foreach ($adapter in $adapters) {
+        try {
+            Write-Log "Disabling adapter: $($adapter.Name)"
+            Disable-NetAdapter -Name $adapter.Name -Confirm:$false -ErrorAction Stop
+            Start-Sleep -Seconds 5
+            Write-Log "Enabling adapter: $($adapter.Name)"
+            Enable-NetAdapter -Name $adapter.Name -Confirm:$false -ErrorAction Stop
+        } catch {
+            Write-Log "Failed to restart adapter $($adapter.Name): $_"
+        }
+    }
+
+    Write-Log "Network adapters restarted."
+}
 
 function Install-Updates {
     Write-Log "========== Starting Windows Update Check: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =========="
@@ -169,6 +213,7 @@ function Install-Updates {
     Write-Log "========== Update Process Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =========="
     return $true
 }
+
 
 
 function Schedule-NextRun {
