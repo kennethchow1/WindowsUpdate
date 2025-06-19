@@ -408,6 +408,29 @@ switch ($stage) {
         } catch {
             Write-Log "Failed to copy log file to desktop: $_"
         }
+        # === Upload log to Cloudflare R2 via Worker ===
+        try {
+            $logFilePath = "$logRoot\WSUSUpdateLog.txt"
+            if (-not (Test-Path $logFilePath)) {
+                Write-Log "Log file not found for upload: $logFilePath"
+                return
+            }
+
+            Write-Log "Preparing to upload log to serverless endpoint..."
+
+            $logContent = Get-Content -Path $logFilePath -Raw
+            $uploadUrl = "https://logs.yourdomain.com/upload"
+
+            $headers = @{
+                "X-Serial-Number" = (Get-WmiObject -Class Win32_BIOS).SerialNumber
+            }
+
+            $response = Invoke-RestMethod -Uri $uploadUrl -Method Put -Body $logContent -Headers $headers -ContentType "text/plain"
+
+            Write-Log "Log uploaded successfully. R2 Key: $($response.key)"
+        } catch {
+            Write-Log "Log upload failed: $_"
+        }
         Start-Process -FilePath "$env:USERPROFILE\chrome\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
     }
     default {
