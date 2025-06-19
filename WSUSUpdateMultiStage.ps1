@@ -411,25 +411,30 @@ switch ($stage) {
         # === Upload log to Cloudflare R2 via Worker ===
         try {
             $logFilePath = "$logRoot\WSUSUpdateLog.txt"
-            if (-not (Test-Path $logFilePath)) {
-                Write-Log "Log file not found for upload: $logFilePath"
-                return
+
+            if (Test-Path $logFilePath) {
+                # Get device serial number and sanitize it
+                $serial = (Get-WmiObject -Class Win32_BIOS).SerialNumber -replace '[^a-zA-Z0-9\-]', ''
+
+        # Format timestamp as yyyyMMdd-HHmmss
+                $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+
+        # Create filename: SERIAL-TIMESTAMP.txt
+                $fileName = "$serial-$timestamp.txt"
+
+        # Construct upload URL
+                $uploadUrl = "https://logs.getupdates.me/$fileName"
+
+                # Upload the log file as binary
+                $logBytes = [System.IO.File]::ReadAllBytes($logFilePath)
+                $response = Invoke-RestMethod -Uri $uploadUrl -Method Put -Body $logBytes -ContentType "application/octet-stream"
+
+                Write-Log "Successfully uploaded log file: $response"
+            } else {
+                Write-Log "Log file not found at $logFilePath. Upload skipped."
             }
-
-            Write-Log "Preparing to upload log to serverless endpoint..."
-
-            $logContent = Get-Content -Path $logFilePath -Raw
-            $uploadUrl = "https://logs.yourdomain.com/upload"
-
-            $headers = @{
-                "X-Serial-Number" = (Get-WmiObject -Class Win32_BIOS).SerialNumber
-            }
-
-            $response = Invoke-RestMethod -Uri $uploadUrl -Method Put -Body $logContent -Headers $headers -ContentType "text/plain"
-
-            Write-Log "Log uploaded successfully. R2 Key: $($response.key)"
         } catch {
-            Write-Log "Log upload failed: $_"
+            Write-Log "Failed to upload log file: $_"
         }
         Start-Process -FilePath "$env:USERPROFILE\chrome\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
     }
