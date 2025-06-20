@@ -236,12 +236,12 @@ function Remove-ScheduledTask {
 }
 
 function Set-DNS {
-    Write-Log "Setting DNS server to 10.1.0.87"
+    Write-Log "Setting DNS server to 10.0.6.21"
 
     $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
     foreach ($adapter in $adapters) {
         try {
-            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses "10.1.0.87"
+            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses "10.0.6.21"
             Write-Log "DNS set on adapter $($adapter.Name)"
         } catch {
             Write-Log "Failed to set DNS on adapter $($adapter.Name): $_"
