@@ -9,8 +9,8 @@ if ($MyInvocation.MyCommand.Path -ne $scriptPath) {
         New-Item -ItemType Directory -Path $logRoot | Out-Null
     }
     Write-Host "Downloading script to $scriptPath ..."
-    Invoke-RestMethod -Uri "https://getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath -UseBasicParsing
-    Invoke-WebRequest -Uri "https://getupdates.me/Initial.ps1" -OutFile "$notscript"
+    Invoke-RestMethod -Uri "https://test.getupdates.me/WSUSUpdateMultiStage.ps1" -OutFile $scriptPath -UseBasicParsing
+    Invoke-WebRequest -Uri "https://test.getupdates.me/Initial.ps1" -OutFile "$notscript"
     Write-Host "Re-launching script from $scriptPath ..."
     Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy unrestricted -NoProfile -File `"$scriptPath`"" -Verb RunAs
     exit
