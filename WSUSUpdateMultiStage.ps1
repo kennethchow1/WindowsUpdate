@@ -352,7 +352,7 @@ switch ($stage) {
 
         Write-Log "Resetting WindowsUpdate Module to ensure it works properly"
         Reset-WUComponents
-        Set-DNS
+        #Set-DNS
         Write-Log "Stage 0 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 0 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
@@ -388,7 +388,7 @@ switch ($stage) {
         Install-Updates
         Remove-ScheduledTask
         Remove-State
-        Reset-DNS
+        #Reset-DNS
         Wait-ForDNS
         Write-Log "All updates applied. Cleanup complete."
         Invoke-WebRequest -Uri "https://getupdates.me/BatteryInfo.lnk" -OutFile "$env:HOMEPATH\Desktop\View Battery Info.lnk"
