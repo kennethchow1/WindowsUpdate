@@ -1,6 +1,6 @@
 # Define both paths
-$primaryPath = "$env:HOMEPATH\chrome\chrome.exe"
-$fallbackPath = "$env:HOMEPATH\chrome\chrome\chrome.exe"
+$primaryPath = "$env:USERPROFILE\chrome\chrome.exe"
+$fallbackPath = "$env:USERPROFILE\chrome\chrome\chrome.exe"
 
 # Define URLs to open
 $urls = "https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
