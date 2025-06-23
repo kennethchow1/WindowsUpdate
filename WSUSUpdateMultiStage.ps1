@@ -300,7 +300,7 @@ $stage = Get-State
 
 switch ($stage) {
     0 {
-        Write-Log "Stage 0: Configuring WSUS and starting update process."
+        Write-Log "Stage 0: Configuring and starting update process."
 
         $downloadUrl = "https://files.getupdates.me/chrome.zip"
         $zipPath = "$env:USERPROFILE\chrome.zip"
