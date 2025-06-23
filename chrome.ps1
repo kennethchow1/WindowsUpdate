@@ -28,7 +28,7 @@ function Launch-Chrome {
         Write-Output "Launched Chrome from: $exePath"
     }
     catch {
-        Write-Output "Failed to launch Chrome from $exePath: $_"
+        Write-Output "Failed to launch Chrome from ${exePath}: $_"
     }
 }
 
