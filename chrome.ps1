@@ -1,20 +1,30 @@
-# Define both possible Chrome paths
-$primaryPath = "$env:HOMEPATH\chrome\chrome.exe"
-$fallbackPath = "$env:HOMEPATH\chrome\chrome\chrome.exe"
+# Set security protocol for download
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Define download URL and target extraction directory
+# Set paths
+$basePath = "$env:USERPROFILE\chrome"
+$primaryPath = "$basePath\chrome.exe"
+$fallbackPath = "$basePath\chrome\chrome.exe"
+$zipPath = "$env:USERPROFILE\Downloads\chrome.zip"
 $downloadUrl = "https://files.getupdates.me/chrome.zip"
-$zipPath = "$env:HOMEPATH\Downloads\chrome.zip"
-$extractPath = "$env:HOMEPATH\chrome"
 
-# Define URLs to open in Chrome
-$urls = "https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
+# Define URLs to open
+$urls = @(
+    "https://retest.us/laptop-no-keypad",
+    "https://testmyscreen.com",
+    "https://monkeytype.com"
+)
 
 # Function to launch Chrome
 function Launch-Chrome {
     param([string]$exePath)
     try {
-        Start-Process -FilePath $exePath -ArgumentList "-no-default-browser-check $urls"
+        if (-not (Test-Path $exePath)) {
+            Write-Output "Executable path not found: $exePath"
+            return
+        }
+        $argList = @("-no-default-browser-check") + $urls
+        Start-Process -FilePath $exePath -ArgumentList $argList
         Write-Output "Launched Chrome from: $exePath"
     }
     catch {
@@ -26,7 +36,7 @@ function Launch-Chrome {
 function Download-And-Extract-Chrome {
     try {
         Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath
-        Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+        Expand-Archive -Path $zipPath -DestinationPath $basePath -Force
         Remove-Item $zipPath -Force
         Write-Output "Downloaded and extracted Chrome."
     }
@@ -45,8 +55,8 @@ elseif (Test-Path $fallbackPath) {
 else {
     Write-Output "Neither Chrome path exists. Downloading..."
     Download-And-Extract-Chrome
+    Start-Sleep -Seconds 2
 
-    # Retry after extraction
     if (Test-Path $primaryPath) {
         Launch-Chrome -exePath $primaryPath
     }
