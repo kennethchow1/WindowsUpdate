@@ -390,6 +390,7 @@ switch ($stage) {
         Remove-State
         Reset-DNS
         Wait-ForDNS
+        Start-Sleep 15
         Install-Updates
         Write-Log "All updates applied. Cleanup complete."
         Invoke-WebRequest -Uri "https://getupdates.me/BatteryInfo.lnk" -OutFile "$env:HOMEPATH\Desktop\View Battery Info.lnk"
