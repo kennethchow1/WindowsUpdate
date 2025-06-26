@@ -168,16 +168,70 @@ function Install-Updates {
     }
 
     try {
-        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers -ErrorAction Stop
-        Install-Module -Name PSWindowsUpdate -Force -Confirm:$false -Scope AllUsers -ErrorAction Stop
-        Import-Module PSWindowsUpdate -Force
+        if (-not (Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) {
+            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
+        }
+
+        if (-not (Get-InstalledModule -Name PSWindowsUpdate -ErrorAction SilentlyContinue)) {
+            Install-Module -Name PSWindowsUpdate -Force -Confirm:$false -Scope AllUsers
+        }
+
+        # Remove any existing PSWindowsUpdate module from memory
+        if (Get-Module -Name PSWindowsUpdate) {
+            Remove-Module -Name PSWindowsUpdate -Force -ErrorAction SilentlyContinue
+        }
+
+        # Retry logic for Stage 3 only
+        $stage = Get-State
+        if ($stage -eq 3) {
+            $maxAttempts = 3
+            for ($i = 1; $i -le $maxAttempts; $i++) {
+                try {
+                    Write-Log "Attempt $i: Importing PSWindowsUpdate (Stage 3)"
+                    Import-Module PSWindowsUpdate -Force -ErrorAction Stop
+                    break
+                } catch {
+                    Write-Log "Attempt $i: Failed to import PSWindowsUpdate. Retrying in 5s..."
+                    Start-Sleep -Seconds 5
+                    if ($i -eq $maxAttempts) {
+                        throw "PSWindowsUpdate module could not be loaded after $maxAttempts attempts."
+                    }
+                }
+            }
+        } else {
+            Import-Module PSWindowsUpdate -Force -ErrorAction Stop
+        }
+
         Add-WUServiceManager -MicrosoftUpdate -Confirm:$false
     } catch {
         Write-Log "Error setting up PSWindowsUpdate: $_"
         return $false
     }
 
-    $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
+    $updates = $null
+    $attemptedReset = $false
+
+    :retryWU
+    try {
+        $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false -ErrorAction Stop
+    } catch {
+        $errMsg = $_.Exception.Message
+        Write-Log "Get-WindowsUpdate failed: $errMsg"
+
+        if (-not $attemptedReset) {
+            Write-Log "Running Reset-WUComponents and retrying..."
+            Reset-WUComponents
+            Start-Sleep -Seconds 10
+            $attemptedReset = $true
+            goto retryWU
+        } else {
+            Write-Log "Get-WindowsUpdate failed again after reset. Rebooting to allow next RunOnce stage..."
+            Start-Sleep -Seconds 5
+            Restart-Computer -Force
+            return
+        }
+    }
+
     if ($updates.Count -eq 0) {
         Write-Log "No updates found."
         return $true
@@ -198,7 +252,7 @@ function Install-Updates {
             Write-Log "Successfully installed: $updateTitle"
         } catch {
             $errMsg = $_.Exception.Message
-            Write-Log "ERROR installing $(updateTitle): $errMsg"
+            Write-Log "ERROR installing $updateTitle: $errMsg"
             "$((Get-Date -Format 'yyyy-MM-dd HH:mm:ss')) - $updateTitle - $errMsg" | Out-File -FilePath $failedUpdatesPath -Append -Encoding UTF8
         }
     }
@@ -213,6 +267,7 @@ function Install-Updates {
     Write-Log "========== Update Process Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =========="
     return $true
 }
+
 
 
 
