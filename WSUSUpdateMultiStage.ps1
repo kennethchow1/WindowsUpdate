@@ -446,116 +446,183 @@ switch ($stage) {
         Start-Sleep -Seconds 15
         Restart-Computer -Force
     }
-    3 {
-        Write-Log "Stage 3: Final update and cleanup phase."
-        #Remove-WSUS
-        Install-Updates
-        Remove-ScheduledTask
-        Remove-State
-        Reset-DNS
-        Wait-ForDNS
-        Start-Sleep 15
-        Install-Updates
-        Write-Log "All updates applied. Cleanup complete."
-        Invoke-WebRequest -Uri "https://getupdates.me/BatteryInfo.lnk" -OutFile "$env:HOMEPATH\Desktop\View Battery Info.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen+_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/Intel_6th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 6th-10th Gen Drivers.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-5th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-5th Gen Drivers.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/DisableAbsoluteHP.lnk" -OutFile "$env:HOMEPATH\Desktop\Disable HP Absolute.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/MASActivateWindows.lnk" -OutFile "$env:HOMEPATH\Desktop\MAS - Activate Windows.lnk"
-        Invoke-WebRequest -Uri "https://getupdates.me/Chrome.lnk" -OutFile "$env:HOMEPATH\Desktop\Chrome.lnk"
-        echo "Activating Windows..."
-        $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
-        iex "cscript /b C:\windows\system32\slmgr.vbs /upk"
-        iex "cscript /b C:\windows\system32\slmgr.vbs /ipk $key"
-        iex "cscript /b C:\windows\system32\slmgr.vbs /ato"
-        echo "Verifying if Windows is Activated... If it doesn't show as Licensed, you will have to manually activate Windows."
-        $ActivationStatus = Get-CimInstance SoftwareLicensingProduct -Filter "Name like 'Windows%'" | Where-Object { $_.PartialProductKey } | Select-Object LicenseStatus       
+  3 {
+    Write-Log "Stage 3: Final update and cleanup phase."
+    #Remove-WSUS
+    Install-Updates
+    Remove-ScheduledTask
+    Remove-State
+    Reset-DNS
+    Wait-ForDNS
+    Start-Sleep 15
+    Install-Updates
+    Write-Log "All updates applied. Cleanup complete."
+    Invoke-WebRequest -Uri "https://getupdates.me/BatteryInfo.lnk" -OutFile "$env:HOMEPATH\Desktop\View Battery Info.lnk"
+    Invoke-WebRequest -Uri "https://getupdates.me/Intel_11th_Gen+_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 11th Gen+ Drivers.lnk"
+    Invoke-WebRequest -Uri "https://getupdates.me/Intel_6th-10th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 6th-10th Gen Drivers.lnk"
+    Invoke-WebRequest -Uri "https://getupdates.me/Intel_4th-5th_Gen_Drivers.lnk" -OutFile "$env:HOMEPATH\Desktop\Intel 4th-5th Gen Drivers.lnk"
+    Invoke-WebRequest -Uri "https://getupdates.me/DisableAbsoluteHP.lnk" -OutFile "$env:HOMEPATH\Desktop\Disable HP Absolute.lnk"
+    Invoke-WebRequest -Uri "https://getupdates.me/MASActivateWindows.lnk" -OutFile "$env:HOMEPATH\Desktop\MAS - Activate Windows.lnk"
+    Invoke-WebRequest -Uri "https://getupdates.me/Chrome.lnk" -OutFile "$env:HOMEPATH\Desktop\Chrome.lnk"
 
-            $LicenseResult = switch($ActivationStatus.LicenseStatus){
-              0	{"Unlicensed"}
-              1	{"Licensed"}
-              2	{"OOBGrace"}
-              3	{"OOTGrace"}
-              4	{"NonGenuineGrace"}
-              5	{"Not Activated"}
-              6	{"ExtendedGrace"}
-              default {"unknown"}
-            }
-        $LicenseResult
-        echo "If you are missing Intel Integrated GPU Drivers, please use the corresponding desktop shortcut for your CPU Generation."
-        $Url = "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/refs/heads/main/batteryinfoview.zip"
-        $DownloadZipFile = Join-Path $env:TEMP "batteryinfoview.zip"
-        $ExtractFolder = Join-Path $env:TEMP "batteryinfoview_extracted"
+    echo "Activating Windows..."
+    $key=(Get-CimInstance -Class SoftwareLicensingService).OA3xOriginalProductKey
+    iex "cscript /b C:\windows\system32\slmgr.vbs /upk"
+    iex "cscript /b C:\windows\system32\slmgr.vbs /ipk $key"
+    iex "cscript /b C:\windows\system32\slmgr.vbs /ato"
+    echo "Verifying if Windows is Activated... If it doesn't show as Licensed, you will have to manually activate Windows."
+    $ActivationStatus = Get-CimInstance SoftwareLicensingProduct -Filter "Name like 'Windows%'" | Where-Object { $_.PartialProductKey } | Select-Object LicenseStatus       
 
-        # Download the zip
-        Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
-
-        # Create extract folder if it doesn't exist
-        if (-not (Test-Path $ExtractFolder)) {
-            New-Item -ItemType Directory -Path $ExtractFolder | Out-Null
-        }
-
-        # Extract it
-        Expand-Archive -LiteralPath $DownloadZipFile -DestinationPath $ExtractFolder -Force
-
-        # Launch the .exe
-        $exePath = Join-Path $ExtractFolder "BatteryInfoView.exe"
-        if (Test-Path $exePath) {
-            Start-Process -FilePath $exePath
-        } else {
-            Write-Host "BatteryInfoView.exe not found after extraction!"
-        }
-        try {
-            $desktopPath = [Environment]::GetFolderPath('MyDocuments')
-            $logFilePath = "$logRoot\WSUSUpdateLog.txt"
-            $destLogFile = Join-Path -Path $desktopPath -ChildPath "WSUSUpdateLog.txt"
-
-            if (Test-Path $logFilePath) {
-                Copy-Item -Path $logFilePath -Destination $destLogFile -Force
-                Write-Log "Copied log file to $destLogFile"
-            } else {
-                Write-Log "Log file not found: $logFilePath"
-            }
-        } catch {
-            Write-Log "Failed to copy log file to desktop: $_"
-        }
-        # === Upload log to Cloudflare R2 via Worker ===
-        try {
-            $logFilePath = "$logRoot\WSUSUpdateLog.txt"
-
-            if (Test-Path $logFilePath) {
-                # Get device serial number and sanitize it
-                $serial = (Get-WmiObject -Class Win32_BIOS).SerialNumber -replace '[^a-zA-Z0-9\-]', ''
-
-        # Format timestamp as yyyyMMdd-HHmmss
-                $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-
-                # Create filename: SERIAL-TIMESTAMP.txt or TIMESTAMP.txt if serial is empty
-                if ([string]::IsNullOrEmpty($serial)) {
-                    $fileName = "$timestamp.txt"
-                } else {
-                    $fileName = "$serial-$timestamp.txt"
-                }
-
-        # Construct upload URL
-                $uploadUrl = "https://logs.getupdates.me/$fileName"
-
-                # Upload the log file as binary
-                $logBytes = [System.IO.File]::ReadAllBytes($logFilePath)
-                $response = Invoke-RestMethod -Uri $uploadUrl -Method Put -Body $logBytes -ContentType "application/octet-stream"
-
-                Write-Log "Successfully uploaded log file: $response"
-            } else {
-                Write-Log "Log file not found at $logFilePath. Upload skipped."
-            }
-        } catch {
-            Write-Log "Failed to upload log file: $_"
-        }
-        Start-Process -FilePath "$env:USERPROFILE\chrome\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
+    $LicenseResult = switch($ActivationStatus.LicenseStatus){
+        0	{"Unlicensed"}
+        1	{"Licensed"}
+        2	{"OOBGrace"}
+        3	{"OOTGrace"}
+        4	{"NonGenuineGrace"}
+        5	{"Not Activated"}
+        6	{"ExtendedGrace"}
+        default {"unknown"}
     }
-    default {
-        Write-Warning "Unknown stage. Exiting."
-        exit
+    $LicenseResult
+    echo "If you are missing Intel Integrated GPU Drivers, please use the corresponding desktop shortcut for your CPU Generation."
+
+    $Url = "https://raw.githubusercontent.com/kennethchow1/WindowsUpdate/refs/heads/main/batteryinfoview.zip"
+    $DownloadZipFile = Join-Path $env:TEMP "batteryinfoview.zip"
+    $ExtractFolder = Join-Path $env:TEMP "batteryinfoview_extracted"
+
+    # Download the zip
+    Invoke-WebRequest -Uri $Url -OutFile $DownloadZipFile -TimeoutSec 30
+
+    # Create extract folder if it doesn't exist
+    if (-not (Test-Path $ExtractFolder)) {
+        New-Item -ItemType Directory -Path $ExtractFolder | Out-Null
+    }
+
+    # Extract it
+    Expand-Archive -LiteralPath $DownloadZipFile -DestinationPath $ExtractFolder -Force
+
+    # Launch the .exe
+    $exePath = Join-Path $ExtractFolder "BatteryInfoView.exe"
+    if (Test-Path $exePath) {
+        Start-Process -FilePath $exePath
+    } else {
+        Write-Host "BatteryInfoView.exe not found after extraction!"
+    }
+
+    try {
+        $desktopPath = [Environment]::GetFolderPath('MyDocuments')
+        $logFilePath = "$logRoot\WSUSUpdateLog.txt"
+        $destLogFile = Join-Path -Path $desktopPath -ChildPath "WSUSUpdateLog.txt"
+
+        if (Test-Path $logFilePath) {
+            Copy-Item -Path $logFilePath -Destination $destLogFile -Force
+            Write-Log "Copied log file to $destLogFile"
+        } else {
+            Write-Log "Log file not found: $logFilePath"
+        }
+    } catch {
+        Write-Log "Failed to copy log file to desktop: $_"
+    }
+
+    # === Upload log to Cloudflare R2 via Worker ===
+    try {
+        $logFilePath = "$logRoot\WSUSUpdateLog.txt"
+
+        if (Test-Path $logFilePath) {
+            # Get device serial number and sanitize it
+            $serial = (Get-WmiObject -Class Win32_BIOS).SerialNumber -replace '[^a-zA-Z0-9\-]', ''
+
+            # Format timestamp as yyyyMMdd-HHmmss
+            $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+
+            # Create filename: SERIAL-TIMESTAMP.txt or TIMESTAMP.txt if serial is empty
+            if ([string]::IsNullOrEmpty($serial)) {
+                $fileName = "$timestamp.txt"
+            } else {
+                $fileName = "$serial-$timestamp.txt"
+            }
+
+            # Construct upload URL
+            $uploadUrl = "https://logs.getupdates.me/$fileName"
+
+            # Upload the log file as binary
+            $logBytes = [System.IO.File]::ReadAllBytes($logFilePath)
+            $response = Invoke-RestMethod -Uri $uploadUrl -Method Put -Body $logBytes -ContentType "application/octet-stream"
+
+            Write-Log "Successfully uploaded log file: $response"
+        } else {
+            Write-Log "Log file not found at $logFilePath. Upload skipped."
+        }
+    } catch {
+        Write-Log "Failed to upload log file: $_"
+    }
+
+    # --- Chrome launch with retry & download if missing ---
+    $chromePath = "$env:USERPROFILE\chrome\chrome.exe"
+    $downloadUrl = "https://files.getupdates.me/chrome.zip"
+    $zipPath = "$env:USERPROFILE\chrome.zip"
+    $extractPath = "$env:USERPROFILE\chrome"
+    $logFile = "$env:USERPROFILE\WSUSLogs\WSUSUpdateLog.txt"
+
+    $maxChromeLaunchAttempts = 2
+    $chromeLaunched = $false
+
+    for ($attempt = 1; $attempt -le $maxChromeLaunchAttempts; $attempt++) {
+        if (Test-Path $chromePath) {
+            try {
+                Write-Log "Attempt $attempt: Launching Chrome."
+                Start-Process -FilePath $chromePath -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
+                $chromeLaunched = $true
+                break
+            } catch {
+                Write-Log "Attempt $attempt: Failed to launch Chrome: $_"
+            }
+        } else {
+            Write-Log "Attempt $attempt: Chrome.exe not found at $chromePath"
+
+            # Start background job to download and extract Chrome
+            if (-not (Test-Path $zipPath)) {
+                Write-Log "Starting background download and extraction of Chrome..."
+
+                Start-Job -ScriptBlock {
+                    param ($url, $zip, $dest, $logFilePath)
+
+                    function Log {
+                        param ($msg)
+                        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                        $entry = "$timestamp - $msg"
+                        Add-Content -Path $logFilePath -Value $entry
+                    }
+
+                    try {
+                        Log "Downloading Chrome from $url ..."
+                        Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
+
+                        if (Test-Path $dest) {
+                            Log "Removing existing extracted folder: $dest"
+                            Remove-Item -Path $dest -Recurse -Force -ErrorAction SilentlyContinue
+                        }
+
+                        Log "Extracting Chrome to $dest"
+                        Expand-Archive -Path $zip -DestinationPath $dest -Force
+
+                        Log "Chrome download and extraction completed successfully."
+                    } catch {
+                        Log "ERROR during Chrome background job: $($_.Exception.Message)"
+                    }
+
+                } -ArgumentList $downloadUrl, $zipPath, $extractPath, $logFile | Out-Null
+
+            } else {
+                Write-Log "Chrome archive already exists at $zipPath, skipping download."
+            }
+
+            Write-Log "Waiting 30 seconds for Chrome download/extract before retrying launch..."
+            Start-Sleep -Seconds 30
+        }
+    }
+
+    if (-not $chromeLaunched) {
+        Write-Log "Chrome failed to launch after $maxChromeLaunchAttempts attempts."
     }
 }
