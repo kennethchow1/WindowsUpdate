@@ -625,4 +625,5 @@ switch ($stage) {
     if (-not $chromeLaunched) {
         Write-Log "Chrome failed to launch after $maxChromeLaunchAttempts attempts."
     }
+
 }
