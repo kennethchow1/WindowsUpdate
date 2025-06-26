@@ -169,7 +169,7 @@ function Install-Updates {
 
     try {
         if (-not (Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) {
-            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers
+            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -ForceBootstrap -Scope AllUsers
         }
 
         if (-not (Get-InstalledModule -Name PSWindowsUpdate -ErrorAction SilentlyContinue)) {
