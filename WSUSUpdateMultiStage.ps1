@@ -176,12 +176,10 @@ function Install-Updates {
             Install-Module -Name PSWindowsUpdate -Force -Confirm:$false -Scope AllUsers
         }
 
-        # Remove any existing PSWindowsUpdate module from memory
         if (Get-Module -Name PSWindowsUpdate) {
             Remove-Module -Name PSWindowsUpdate -Force -ErrorAction SilentlyContinue
         }
 
-        # Retry logic for Stage 3 only
         $stage = Get-State
         if ($stage -eq 3) {
             $maxAttempts = 3
@@ -210,6 +208,7 @@ function Install-Updates {
 
     $updates = $null
     $attemptedReset = $false
+    $stage3SecondTryFlag = "$env:ProgramData\Stage3SecondTry.flag"
 
     :retryWU
     try {
@@ -224,8 +223,17 @@ function Install-Updates {
             Start-Sleep -Seconds 10
             $attemptedReset = $true
             goto retryWU
+        } elseif ($stage -eq 3 -and -not (Test-Path $stage3SecondTryFlag)) {
+            Write-Log "Stage 3 Get-WindowsUpdate failed after reset. Rebooting and retrying Stage 3 once more..."
+            New-Item $stage3SecondTryFlag -Force | Out-Null
+            Start-Sleep -Seconds 5
+            Restart-Computer -Force
+            return
+        } elseif ($stage -eq 3 -and (Test-Path $stage3SecondTryFlag)) {
+            Write-Log "Stage 3 second retry also failed. Proceeding without further retries."
+            Remove-Item $stage3SecondTryFlag -ErrorAction SilentlyContinue
         } else {
-            Write-Log "Get-WindowsUpdate failed again after reset. Rebooting to allow next RunOnce stage..."
+            Write-Log "Non-Stage 3 update failure after reset. Rebooting to allow next RunOnce stage..."
             Start-Sleep -Seconds 5
             Restart-Computer -Force
             return
@@ -267,6 +275,7 @@ function Install-Updates {
     Write-Log "========== Update Process Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =========="
     return $true
 }
+
 
 
 
