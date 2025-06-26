@@ -209,34 +209,37 @@ function Install-Updates {
     $updates = $null
     $attemptedReset = $false
     $stage3SecondTryFlag = "$env:ProgramData\Stage3SecondTry.flag"
+    $retry = $true
 
-    :retryWU
-    try {
-        $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false -ErrorAction Stop
-    } catch {
-        $errMsg = $_.Exception.Message
-        Write-Log "Get-WindowsUpdate failed: $errMsg"
+    while ($retry) {
+        try {
+            $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false -ErrorAction Stop
+            $retry = $false
+        } catch {
+            $errMsg = $_.Exception.Message
+            Write-Log "Get-WindowsUpdate failed: $errMsg"
 
-        if (-not $attemptedReset) {
-            Write-Log "Running Reset-WUComponents and retrying..."
-            Reset-WUComponents
-            Start-Sleep -Seconds 10
-            $attemptedReset = $true
-            goto retryWU
-        } elseif ($stage -eq 3 -and -not (Test-Path $stage3SecondTryFlag)) {
-            Write-Log "Stage 3 Get-WindowsUpdate failed after reset. Rebooting and retrying Stage 3 once more..."
-            New-Item $stage3SecondTryFlag -Force | Out-Null
-            Start-Sleep -Seconds 5
-            Restart-Computer -Force
-            return
-        } elseif ($stage -eq 3 -and (Test-Path $stage3SecondTryFlag)) {
-            Write-Log "Stage 3 second retry also failed. Proceeding without further retries."
-            Remove-Item $stage3SecondTryFlag -ErrorAction SilentlyContinue
-        } else {
-            Write-Log "Non-Stage 3 update failure after reset. Rebooting to allow next RunOnce stage..."
-            Start-Sleep -Seconds 5
-            Restart-Computer -Force
-            return
+            if (-not $attemptedReset) {
+                Write-Log "Running Reset-WUComponents and retrying..."
+                Reset-WUComponents
+                Start-Sleep -Seconds 10
+                $attemptedReset = $true
+            } elseif ($stage -eq 3 -and -not (Test-Path $stage3SecondTryFlag)) {
+                Write-Log "Stage 3 Get-WindowsUpdate failed after reset. Rebooting and retrying Stage 3 once more..."
+                New-Item $stage3SecondTryFlag -Force | Out-Null
+                Start-Sleep -Seconds 5
+                Restart-Computer -Force
+                return
+            } elseif ($stage -eq 3 -and (Test-Path $stage3SecondTryFlag)) {
+                Write-Log "Stage 3 second retry also failed. Proceeding without further retries."
+                Remove-Item $stage3SecondTryFlag -ErrorAction SilentlyContinue
+                $retry = $false
+            } else {
+                Write-Log "Non-Stage 3 update failure after reset. Rebooting to allow next RunOnce stage..."
+                Start-Sleep -Seconds 5
+                Restart-Computer -Force
+                return
+            }
         }
     }
 
@@ -275,10 +278,6 @@ function Install-Updates {
     Write-Log "========== Update Process Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') =========="
     return $true
 }
-
-
-
-
 
 function Schedule-NextRun {
     $runOnceKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
