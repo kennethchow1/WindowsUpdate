@@ -185,11 +185,11 @@ function Install-Updates {
             $maxAttempts = 3
             for ($i = 1; $i -le $maxAttempts; $i++) {
                 try {
-                    Write-Log "Attempt $i: Importing PSWindowsUpdate (Stage 3)"
+                    Write-Log "Attempt $($i): Importing PSWindowsUpdate (Stage 3)"
                     Import-Module PSWindowsUpdate -Force -ErrorAction Stop
                     break
                 } catch {
-                    Write-Log "Attempt $i: Failed to import PSWindowsUpdate. Retrying in 5s..."
+                    Write-Log "Attempt $($i): Failed to import PSWindowsUpdate. Retrying in 5s..."
                     Start-Sleep -Seconds 5
                     if ($i -eq $maxAttempts) {
                         throw "PSWindowsUpdate module could not be loaded after $maxAttempts attempts."
@@ -260,7 +260,7 @@ function Install-Updates {
             Write-Log "Successfully installed: $updateTitle"
         } catch {
             $errMsg = $_.Exception.Message
-            Write-Log "ERROR installing $updateTitle: $errMsg"
+            Write-Log "ERROR installing $($updateTitle): $errMsg"
             "$((Get-Date -Format 'yyyy-MM-dd HH:mm:ss')) - $updateTitle - $errMsg" | Out-File -FilePath $failedUpdatesPath -Append -Encoding UTF8
         }
     }
@@ -570,15 +570,15 @@ switch ($stage) {
     for ($attempt = 1; $attempt -le $maxChromeLaunchAttempts; $attempt++) {
         if (Test-Path $chromePath) {
             try {
-                Write-Log "Attempt $attempt: Launching Chrome."
+                Write-Log "Attempt $($attempt): Launching Chrome."
                 Start-Process -FilePath $chromePath -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
                 $chromeLaunched = $true
                 break
             } catch {
-                Write-Log "Attempt $attempt: Failed to launch Chrome: $_"
+                Write-Log "Attempt $($attempt): Failed to launch Chrome: $_"
             }
         } else {
-            Write-Log "Attempt $attempt: Chrome.exe not found at $chromePath"
+            Write-Log "Attempt $($attempt): Chrome.exe not found at $chromePath"
 
             # Start background job to download and extract Chrome
             if (-not (Test-Path $zipPath)) {
