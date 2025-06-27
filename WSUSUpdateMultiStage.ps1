@@ -270,7 +270,7 @@ function Install-Updates {
 
     Write-Log "Final update pass to catch anything else (auto-reboot if needed)..."
     try {
-        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false | Out-Null
+        Install-WindowsUpdate -MicrosoftUpdate -Category 'Drivers','Security Updates','Critical Updates','Definition Updates' -AutoReboot -Confirm:$false | Out-Null
     } catch {
         Write-Log "AutoReboot stage error: $_"
     }
