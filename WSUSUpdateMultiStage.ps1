@@ -213,7 +213,7 @@ function Install-Updates {
 
     while ($retry) {
         try {
-            $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false -ErrorAction Stop
+            $updates = Get-WindowsUpdate -MicrosoftUpdate -Category -IgnoreReboot -Confirm:$false -ErrorAction Stop
             $retry = $false
         } catch {
             $errMsg = $_.Exception.Message
@@ -259,7 +259,7 @@ function Install-Updates {
 
         Write-Log "Installing update: $updateTitle"
         try {
-            Install-WindowsUpdate -Title $updateTitle -AcceptAll -IgnoreReboot -Confirm:$false -ErrorAction Stop | Out-Null
+            Install-WindowsUpdate -Title $updateTitle -Category 'Drivers','Security Updates','Critical Updates','Definition Updates' -IgnoreReboot -Confirm:$false -ErrorAction Stop | Out-Null
             Write-Log "Successfully installed: $updateTitle"
         } catch {
             $errMsg = $_.Exception.Message
