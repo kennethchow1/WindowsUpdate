@@ -213,7 +213,7 @@ function Install-Updates {
 
     while ($retry) {
         try {
-            $updates = Get-WindowsUpdate -MicrosoftUpdate -Category -IgnoreReboot -Confirm:$false -ErrorAction Stop
+            $updates = Get-WindowsUpdate -MicrosoftUpdate -Category 'Drivers','Security Updates','Critical Updates','Definition Updates' -IgnoreReboot -Confirm:$false -ErrorAction Stop
             $retry = $false
         } catch {
             $errMsg = $_.Exception.Message
