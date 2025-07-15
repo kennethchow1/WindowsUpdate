@@ -386,6 +386,7 @@ switch ($stage) {
         Write-Log "Stage 3: Final update and cleanup phase."
         #Remove-WSUS
         Install-Updates
+        Install-Updates
         Remove-ScheduledTask
         Remove-State
         #Reset-DNS
