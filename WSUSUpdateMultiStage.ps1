@@ -116,7 +116,7 @@ function Reset-WUComponents {
 function Wait-ForInternet {
     param (
         [string]$TestUrl = "https://www.microsoft.com",
-        [int]$MaxRetries = 6,
+        [int]$MaxRetries = 8,
         [int]$DelaySeconds = 5
     )
 
@@ -386,6 +386,7 @@ switch ($stage) {
         Write-Log "Stage 3: Final update and cleanup phase."
         #Remove-WSUS
         Install-Updates
+        Start-Sleep -Seconds 15
         Install-Updates
         Remove-ScheduledTask
         Remove-State
