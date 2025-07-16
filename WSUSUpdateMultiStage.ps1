@@ -364,6 +364,7 @@ switch ($stage) {
         Write-Log "Stage 1: Post-reboot update run."
         Set-State 2
         Schedule-NextRun
+        Wait-ForInternet
         Write-Log "Stage 1 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 1 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
@@ -375,6 +376,7 @@ switch ($stage) {
         Write-Log "Stage 2: Second post-reboot update run."
         Set-State 3
         Schedule-NextRun
+        Wait-ForInternet
         Write-Log "Stage 2 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 2 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
@@ -385,6 +387,7 @@ switch ($stage) {
     3 {
         Write-Log "Stage 3: Final update and cleanup phase."
         #Remove-WSUS
+        Wait-ForInternet
         Install-Updates
         Start-Sleep -Seconds 15
         Install-Updates
