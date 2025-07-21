@@ -389,7 +389,7 @@ switch ($stage) {
         #Remove-WSUS
         Wait-ForInternet
         Install-Updates
-        Start-Sleep -Seconds 15
+        Start-Sleep -Seconds 25
         Install-Updates
         Remove-ScheduledTask
         Remove-State
