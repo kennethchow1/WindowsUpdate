@@ -402,6 +402,7 @@ switch ($stage) {
         Set-State 2
         Schedule-NextRun
         Wait-ForInternet
+        Reset-WUComponents
         Write-Log "Stage 1 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 1 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
@@ -414,6 +415,7 @@ switch ($stage) {
         Set-State 3
         Schedule-NextRun
         Wait-ForInternet
+        Reset-WUComponents
         Write-Log "Stage 2 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
         Write-Log "Stage 2 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
