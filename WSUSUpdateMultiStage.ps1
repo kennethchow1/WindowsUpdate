@@ -388,8 +388,7 @@ switch ($stage) {
         Write-Log "Stage 3: Final update and cleanup phase."
         #Remove-WSUS
         Wait-ForInternet
-        Install-Updates
-        Start-Sleep -Seconds 25
+        Reset-WUComponents
         Install-Updates
         Remove-ScheduledTask
         Remove-State
