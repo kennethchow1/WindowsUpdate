@@ -387,7 +387,7 @@ switch ($stage) {
         Set-State 1
         Schedule-NextRun
 
-        Write-Log "Resetting WindowsUpdate Module to ensure it works properly"
+        
         Reset-WUComponents
         #Set-DNS
         Write-Log "Stage 0 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
