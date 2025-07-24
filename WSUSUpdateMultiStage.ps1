@@ -92,21 +92,18 @@ function Reset-WUComponents {
     )
 
     foreach ($svc in $services) {
-        Write-Log "Stopping service: $svc"
         Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Log "Deleting SoftwareDistribution and CatRoot2 folders..."
+    
     Remove-Item -Recurse -Force "C:\Windows\SoftwareDistribution" -ErrorAction SilentlyContinue
     Remove-Item -Recurse -Force "C:\Windows\System32\catroot2" -ErrorAction SilentlyContinue
 
-    Write-Log "Resetting network & BITS config..."
     netsh winsock reset | Out-Null
     netsh winhttp reset proxy | Out-Null
     bitsadmin /reset /allusers | Out-Null
 
     foreach ($svc in $services) {
-        Write-Log "Starting service: $svc"
         Start-Service -Name $svc -ErrorAction SilentlyContinue
     }
 
