@@ -289,6 +289,46 @@ function Wait-ForDNS {
     exit 1
 }
 
+# Function to launch Chrome
+function Launch-Chrome {
+    param([string]$exePath)
+    try {
+        if (-not (Test-Path $exePath)) {
+            Write-Output "Executable path not found: $exePath"
+            return
+        }
+        $urls = @(
+            "https://retest.us/laptop-no-keypad",
+            "https://testmyscreen.com",
+            "https://monkeytype.com"
+        )
+        $argList = @("-no-default-browser-check") + $urls
+        Start-Process -FilePath $exePath -ArgumentList $argList
+        Write-Output "Launched Chrome from: $exePath"
+    }
+    catch {
+        Write-Output "Failed to launch Chrome from ${exePath}: $_"
+    }
+}
+
+# Function to download and extract Chrome
+function Download-And-Extract-Chrome {
+    $downloadUrl = "https://files.getupdates.me/chrome.zip"
+    $zipPath = "$env:USERPROFILE\Downloads\chrome.zip"
+    $basePath = "$env:USERPROFILE\chrome"
+
+    try {
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath
+        Expand-Archive -Path $zipPath -DestinationPath $basePath -Force
+        Remove-Item $zipPath -Force
+        Write-Output "Downloaded and extracted Chrome."
+    }
+    catch {
+        Write-Output "Failed to download or extract Chrome: $_"
+    }
+}
+
+
 # --- Main logic ---
 
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltinRole] "Administrator")) {
@@ -490,7 +530,30 @@ switch ($stage) {
         } catch {
             Write-Log "Failed to upload log file: $_"
         }
-        Start-Process -FilePath "$env:USERPROFILE\chrome\chrome\chrome.exe" -ArgumentList "-no-default-browser-check https://retest.us/laptop-no-keypad https://testmyscreen.com https://monkeytype.com"
+        # Launch Chrome from correct path
+        $primaryPath = "$env:USERPROFILE\chrome\chrome.exe"
+        $fallbackPath = "$env:USERPROFILE\chrome\chrome\chrome.exe"
+
+        if (Test-Path $primaryPath) {
+            Launch-Chrome -exePath $primaryPath
+        }
+        elseif (Test-Path $fallbackPath) {
+            Launch-Chrome -exePath $fallbackPath
+        }
+        else {
+            Write-Output "Chrome not found. Attempting download..."
+            Download-And-Extract-Chrome
+            Start-Sleep -Seconds 2
+            if (Test-Path $primaryPath) {
+                Launch-Chrome -exePath $primaryPath
+            }
+            elseif (Test-Path $fallbackPath) {
+                Launch-Chrome -exePath $fallbackPath
+            }
+            else {
+                Write-Output "Failed to find Chrome after download."
+            }
+        }
     }
     default {
         Write-Warning "Unknown stage. Exiting."
