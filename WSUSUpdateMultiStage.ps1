@@ -521,7 +521,7 @@ switch ($stage) {
         }
         # === Upload log to Cloudflare R2 via Worker ===
         try {
-            $logFilePath = "$logRoot\WSUSUpdateLog.txt"
+            $logFilePath = "$logRoot\Log.txt"
 
             if (Test-Path $logFilePath) {
                 # Get device serial number and sanitize it
@@ -546,10 +546,10 @@ switch ($stage) {
 
                 Write-Log "Successfully uploaded log file: $response"
             } else {
-                Write-Log "Log file not found at $logFilePath. Upload skipped."
+                #Write-Log "Log file not found at $logFilePath. Upload skipped."
             }
         } catch {
-            Write-Log "Failed to upload log file: $_"
+            #Write-Log "Failed to upload log file: $_"
         }
         # Launch Chrome from correct path
         $primaryPath = "$env:USERPROFILE\chrome\chrome.exe"
