@@ -119,21 +119,43 @@ function Wait-ForInternet {
 
     Write-Log "Waiting for internet connectivity ($TestUrl)..."
 
-    for ($i = 1; $i -le $MaxRetries; $i++) {
-        try {
-            $res = Invoke-WebRequest -Uri $TestUrl -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-            if ($res.StatusCode -eq 200) {
-                Write-Log "Internet check passed on attempt $i."
-                return
+    $CheckInternet = {
+        for ($i = 1; $i -le $MaxRetries; $i++) {
+            try {
+                $res = Invoke-WebRequest -Uri $TestUrl -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+                if ($res.StatusCode -eq 200) {
+                    Write-Log "Internet check passed on attempt $i."
+                    return $true
+                }
+            } catch {
+                Write-Log "Internet check failed (attempt $i). Retrying in $DelaySeconds seconds..."
+                Start-Sleep -Seconds $DelaySeconds
             }
-        } catch {
-            Write-Log "Internet check failed (attempt $i). Retrying in $DelaySeconds seconds..."
-            Start-Sleep -Seconds $DelaySeconds
         }
+        return $false
     }
 
-    throw "Internet did not recover after $MaxRetries attempts."
+    if (-not (& $CheckInternet)) {
+        Write-Log "Internet did not recover after $MaxRetries attempts. Restarting network adapters..."
+        Restart-NetworkAdapter
+        Write-Log "Retrying internet check after network restart..."
+
+        if (-not (& $CheckInternet)) {
+            Write-Log "Internet connection could not be established after adapter restart."
+            Write-Log "Manual intervention required. Press ENTER to continue the script once internet is restored."
+            Read-Host ">>> Please check network and press ENTER to retry"
+            
+            # Final retry loop after user input
+            while (-not (& $CheckInternet)) {
+                Write-Log "Still no internet. Press ENTER again to retry, or press Ctrl+C to cancel script."
+                Read-Host ">>> Internet still down. Press ENTER to retry"
+            }
+
+            Write-Log "Internet connection restored after manual intervention."
+        }
+    }
 }
+
 
 function Restart-NetworkAdapter {
     Write-Log "Restarting all active network adapters..."
