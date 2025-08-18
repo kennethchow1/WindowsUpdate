@@ -323,7 +323,7 @@ function Launch-Chrome {
         )
         $argList = @("-no-default-browser-check") + $urls
         Start-Process -FilePath $exePath -ArgumentList $argList
-        Write-Output "Launched Chrome from: $exePath"
+        #Write-Output "Launched Chrome from: $exePath"
     }
     catch {
         Write-Output "Failed to launch Chrome from ${exePath}: $_"
