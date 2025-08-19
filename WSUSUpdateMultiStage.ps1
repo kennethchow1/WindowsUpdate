@@ -238,7 +238,31 @@ function Install-Updates {
 
     Write-Log "Final update pass to catch anything else (auto-reboot if needed)..."
     try {
-        Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot -Confirm:$false | Out-Null
+        # Get updates again and exclude specific KBs
+        $finalUpdates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false | Where-Object {
+            $include = $true
+            foreach ($kb in $excludedKBs) {
+                if ($_.Title -match $kb) {
+                    Write-Log "EXCLUDING (final pass) update: $($_.Title)"
+                    $include = $false
+                    break
+                }
+            }
+            return $include
+        }
+
+        if ($finalUpdates.Count -gt 0) {
+            foreach ($update in $finalUpdates) {
+                Write-Log "Final pass installing: $($update.Title)"
+                try {
+                    Install-WindowsUpdate -Title $update.Title -AcceptAll -AutoReboot -Confirm:$false -ErrorAction Stop | Out-Null
+                } catch {
+                    Write-Log "Final pass ERROR installing $($update.Title): $_"
+                }
+            }
+        } else {
+            Write-Log "No updates to install in final pass (after exclusions)."
+        }
     } catch {
         Write-Log "AutoReboot stage error: $_"
     }
