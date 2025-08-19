@@ -185,6 +185,8 @@ function Install-Updates {
     if (Test-Path $failedUpdatesPath) {
         $existingFailures = Get-Content $failedUpdatesPath
     }
+    # Define the KB(s) to exclude
+    $excludedKBs = @('KB5063878')  # Replace with the KB you want to skip
 
     try {
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers -ErrorAction Stop
@@ -197,8 +199,20 @@ function Install-Updates {
     }
 
     $updates = Get-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$false
-    if ($updates.Count -eq 0) {
-        Write-Log "No updates found."
+        # Filter out excluded KBs
+    $filteredUpdates = $updates | Where-Object {
+        $include = $true
+        foreach ($kb in $excludedKBs) {
+            if ($_.Title -match $kb) {
+                Write-Log "EXCLUDING update: $($_.Title)"
+                $include = $false
+                break
+            }
+        }
+        return $include
+    }
+    if ($filteredUpdates.Count -eq 0) {
+        Write-Log "No updates found (after filtering exclusions)."
         return $true
     }
 
