@@ -216,9 +216,9 @@ function Install-Updates {
         return $true
     }
 
-    Write-Log "Found $($updates.Count) updates. Beginning individual installation..."
+    Write-Log "Found $($filteredUpdates.Count) updates. Beginning individual installation..."
 
-    foreach ($update in $updates) {
+    foreach ($update in $filteredUpdates) {
         $updateTitle = $update.Title
         if ($existingFailures -contains $updateTitle) {
             Write-Log "SKIPPING previously failed update: $updateTitle"
