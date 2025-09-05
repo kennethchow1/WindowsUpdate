@@ -502,9 +502,9 @@ switch ($stage) {
         Schedule-NextRun
         Wait-ForInternet
         Reset-WUComponents
-        Write-Log "Stage 3 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        Write-Log "Stage 4 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Install-Updates
-        Write-Log "Stage 3 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        Write-Log "Stage 4 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         Write-Log "Rebooting in 15 seconds..."
         Start-Sleep -Seconds 15
         Restart-Computer -Force
