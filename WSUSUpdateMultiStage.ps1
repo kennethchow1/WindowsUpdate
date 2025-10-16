@@ -497,20 +497,7 @@ switch ($stage) {
         Restart-Computer -Force
     }
     4 {
-        Write-Log "Stage 4: Fourth post-reboot update run."
-        Set-State 5
-        Schedule-NextRun
-        Wait-ForInternet
-        Reset-WUComponents
-        Write-Log "Stage 4 update start: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-        Install-Updates
-        Write-Log "Stage 4 update finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-        Write-Log "Rebooting in 15 seconds..."
-        Start-Sleep -Seconds 15
-        Restart-Computer -Force
-    }
-    5 {
-        Write-Log "Stage 5: Final update and cleanup phase."
+        Write-Log "Stage 4: Final update and cleanup phase."
         #Remove-WSUS
         Wait-ForInternet
         Reset-WUComponents
