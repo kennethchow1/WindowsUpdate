@@ -20,7 +20,8 @@ if [ -z "$CPU_FULL" ]; then
 fi
 
 # Extract model code from CPU string (e.g. i7-9750H)
-CPU_CODE=$(echo "$CPU_FULL" | grep -Eo 'i[3579]-[0-9A-Z]+' | head -n 1)
+CPU_CODE=$(echo "$CPU_FULL" | grep -Eo '[iI][3579]-[0-9A-Z]+' | head -n 1 | tr '[:lower:]' '[:upper:]')
+
 
 # Fallback for Apple Silicon (M1, M2, M3, etc.)
 if [ -z "$CPU_CODE" ]; then
