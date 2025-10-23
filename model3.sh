@@ -13,11 +13,6 @@ if ! curl -fsSL "$CSV_URL" -o "$CSV_FILE"; then
   exit 1
 fi
 
-# === Normalize GPU function ===
-normalize_gpu() {
-  echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/ graphics?$//; s/ chipset model//; s/ +/ /g' | xargs
-}
-
 # === Get CPU info ===
 CPU_FULL=$(sysctl -n machdep.cpu.brand_string 2>/dev/null)
 if [ -z "$CPU_FULL" ]; then
@@ -53,14 +48,13 @@ fi
 
 GPU_MODEL=$(echo "$GPU_MODEL" | xargs)
 
-
 # === Output detected info ===
 echo "🧠 CPU detected: $CPU_FULL"
 echo "🔍 CPU code extracted: $CPU_CODE"
 echo "🎨 GPU detected: $GPU_MODEL"
 echo "🔎 Searching model_order in remote CSV database..."
 
-# === Lookup in CSV with improved CPU matching ===
+# === Lookup in CSV with improved CPU matching, no GPU normalization ===
 MATCH=$(awk -F, -v cpu="$CPU_CODE" -v gpu="$GPU_MODEL" '
 BEGIN {IGNORECASE=1}
 NR>1 {
@@ -74,19 +68,13 @@ NR>1 {
   match(cpu_field, /\(([A-Z0-9\-]+)\)/, arr)
   cpu_in_csv = arr[1]
 
-  # Normalize GPU column similar to input
-  gpu_col_norm = gpu_field
-  gsub(/graphics?$/,"", gpu_col_norm)
-  gsub(/chipset model$/,"", gpu_col_norm)
-  gsub(/ +/, " ", gpu_col_norm)
-
   cpu_in_csv_lc = tolower(cpu_in_csv)
   cpu_lc = tolower(cpu)
-  gpu_col_lc = tolower(gpu_col_norm)
+  gpu_field_lc = tolower(gpu_field)
   gpu_lc = tolower(gpu)
 
   cpu_match = (cpu_in_csv_lc == cpu_lc)
-  gpu_match = (index(gpu_col_lc, gpu_lc) > 0) || (index(gpu_lc, gpu_col_lc) > 0)
+  gpu_match = (index(gpu_field_lc, gpu_lc) > 0) || (index(gpu_lc, gpu_field_lc) > 0)
 
   if (cpu_match && gpu_match) {
     print "✅ Model Order: " fields[2]
