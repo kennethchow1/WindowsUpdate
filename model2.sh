@@ -20,19 +20,20 @@ if [ -z "$CPU_MODEL" ]; then
 fi
 CPU_MODEL=$(echo "$CPU_MODEL" | sed 's/(R)//g' | sed 's/CPU @.*//g' | xargs)
 
-# === GET GPU INFO ===
-GPU_LIST=$(system_profiler SPDisplaysDataType | grep "Chipset Model" | awk -F": " '{print $2}' | xargs -L1)
+# === GET GPU INFO (collect all) ===
+GPU_LIST=$(system_profiler SPDisplaysDataType | grep "Chipset Model" | awk -F": " '{print $2}' | sed 's/^ *//;s/ *$//' )
+
 GPU_MODEL=""
 
-# Prefer AMD if available
-for gpu in $GPU_LIST; do
+# --- Prefer AMD GPU if available ---
+while IFS= read -r gpu; do
   if echo "$gpu" | grep -qi "AMD"; then
     GPU_MODEL="$gpu"
     break
   fi
-done
+done <<< "$GPU_LIST"
 
-# If no AMD GPU found, use first GPU
+# --- Fallback to first GPU if no AMD found ---
 if [ -z "$GPU_MODEL" ]; then
   GPU_MODEL=$(echo "$GPU_LIST" | head -n 1)
 fi
