@@ -14,18 +14,26 @@ if ! curl -fsSL "$CSV_URL" -o "$CSV_FILE"; then
 fi
 
 # === GET CPU INFO ===
-CPU_MODEL=$(sysctl -n machdep.cpu.brand_string 2>/dev/null)
-if [ -z "$CPU_MODEL" ]; then
-  CPU_MODEL=$(system_profiler SPHardwareDataType | grep "Chip" | awk -F": " '{print $2}')
+CPU_FULL=$(sysctl -n machdep.cpu.brand_string 2>/dev/null)
+if [ -z "$CPU_FULL" ]; then
+  CPU_FULL=$(system_profiler SPHardwareDataType | grep "Chip" | awk -F": " '{print $2}')
 fi
-CPU_MODEL=$(echo "$CPU_MODEL" | sed 's/(R)//g' | sed 's/CPU @.*//g' | xargs)
 
-# === GET GPU INFO (collect all) ===
-GPU_LIST=$(system_profiler SPDisplaysDataType | grep "Chipset Model" | awk -F": " '{print $2}' | sed 's/^ *//;s/ *$//' )
+# Extract model code from CPU string (e.g. i7-9750H)
+CPU_CODE=$(echo "$CPU_FULL" | grep -Eo 'i[3579]-[0-9A-Z]+' | head -n 1)
 
+# Fallback for Apple Silicon (M1, M2, M3, etc.)
+if [ -z "$CPU_CODE" ]; then
+  CPU_CODE=$(echo "$CPU_FULL" | grep -Eo 'M[0-9]+( Pro| Max| Ultra)?' | head -n 1)
+fi
+
+CPU_CODE=$(echo "$CPU_CODE" | xargs)
+
+# === GET GPU INFO ===
+GPU_LIST=$(system_profiler SPDisplaysDataType | grep "Chipset Model" | awk -F": " '{print $2}' | sed 's/^ *//;s/ *$//')
 GPU_MODEL=""
 
-# --- Prefer AMD GPU if available ---
+# Prefer AMD if present
 while IFS= read -r gpu; do
   if echo "$gpu" | grep -qi "AMD"; then
     GPU_MODEL="$gpu"
@@ -33,7 +41,7 @@ while IFS= read -r gpu; do
   fi
 done <<< "$GPU_LIST"
 
-# --- Fallback to first GPU if no AMD found ---
+# Fallback to first GPU
 if [ -z "$GPU_MODEL" ]; then
   GPU_MODEL=$(echo "$GPU_LIST" | head -n 1)
 fi
@@ -41,16 +49,17 @@ fi
 GPU_MODEL=$(echo "$GPU_MODEL" | xargs)
 
 # === OUTPUT DETECTED HARDWARE ===
-echo "🧠 CPU detected: $CPU_MODEL"
+echo "🧠 CPU detected: $CPU_FULL"
+echo "🔍 CPU code extracted: $CPU_CODE"
 echo "🎨 GPU detected: $GPU_MODEL"
 echo "🔎 Searching in remote CSV database..."
 
 # === LOOKUP IN CSV ===
-MATCH=$(awk -F, -v cpu="$CPU_MODEL" -v gpu="$GPU_MODEL" '
+MATCH=$(awk -F, -v cpu="$CPU_CODE" -v gpu="$GPU_MODEL" '
 BEGIN {IGNORECASE=1}
 NR>1 {
   gsub(/"/, "", $0);
-  if (index(cpu, $4) && index(gpu, $5)) {
+  if (index($4, cpu) && index(gpu, $5)) {
     print "✅ Model Order: " $2 "\n💻 Model ID: " $1 "\n📅 Year: " $6;
     exit
   }
@@ -60,5 +69,5 @@ NR>1 {
 if [ -n "$MATCH" ]; then
   echo "$MATCH"
 else
-  echo "❌ No matching entry found for CPU: '$CPU_MODEL' and GPU: '$GPU_MODEL'"
+  echo "❌ No matching entry found for CPU: '$CPU_CODE' and GPU: '$GPU_MODEL'"
 fi
