@@ -1,9 +1,11 @@
 #!/bin/sh
 # Apple MacBook SKU Generator (Online CSV)
+# Fully self-contained version
 # Melody's SKU Tool
 
-CSV_URL="https://getupdates.me/key.csv"
+CSV_URL="https://example.com/Apple SKU Key - Key.csv"
 
+# Fetch CSV from URL dynamically
 fetch_csv() {
   if command -v curl >/dev/null 2>&1; then
     curl -sL "$CSV_URL"
@@ -17,6 +19,7 @@ fetch_csv() {
 
 trim() { printf "%s" "$1" | awk '{$1=$1; print}'; }
 
+# === CODE MAPPINGS ===
 ram_code() {
   case "$1" in
     8) echo "3" ;;
@@ -66,6 +69,7 @@ cond_code() {
   esac
 }
 
+# === PRINT BOXED SKU REPORT ===
 print_boxed() {
   FULLSKU="$1"; MODEL_ORDER="$2"; MODEL="$3"; MODEL_BASIC="$4"; MODEL_EMC="$5"
   BASESKU="$6"; YEAR="$7"; CPU="$8"; GPU="$9"; BATTERY="${10}"; CHARGER="${11}"
@@ -94,47 +98,24 @@ print_boxed() {
   echo "╚$(printf '═%.0s' $(seq 1 70))╝"
 }
 
+# === VIEW MODELS ===
 view_models() {
   echo ""
   echo "=== AVAILABLE MODELS ==="
   fetch_csv | awk -F, 'NR>1 {printf "%-8s — %-18s — %s\n", $9, $1, $6}' | sort -u
 }
 
+# === VIEW CONFIG OPTIONS ===
 view_config_options() {
   echo ""
   echo "=== CONFIGURATION OPTIONS ==="
-  echo "RAM:"
-  echo "  8 GB  → 3"
-  echo "  16 GB → 4"
-  echo "  32 GB → 6"
-  echo "  36 GB → A"
-  echo "  40 GB → D"
-  echo "  48 GB → B"
-  echo "  64 GB → 7"
-  echo ""
-  echo "SSD:"
-  echo "  128 GB → 4"
-  echo "  256 GB → 5"
-  echo "  512 GB → 6"
-  echo "  1 TB   → 8"
-  echo "  2 TB   → A"
-  echo "  4 TB   → B"
-  echo ""
-  echo "Condition:"
-  echo "  A → Excellent"
-  echo "  B → Good"
-  echo "  C → Fair"
-  echo "  D → Poor"
-  echo ""
-  echo "Color Codes:"
-  echo "  Gray / Space Gray → G"
-  echo "  Silver → S"
-  echo "  Rose Gold → R"
-  echo "  Gold → D"
-  echo "  Blue / Midnight Blue → M"
-  echo "  Black / Space Black → B"
+  echo "RAM: 8 → 3, 16 → 4, 32 → 6, 36 → A, 40 → D, 48 → B, 64 → 7"
+  echo "SSD: 128 → 4, 256 → 5, 512 → 6, 1024 → 8, 2048 → A, 4096 → B"
+  echo "Condition: A → Excellent, B → Good, C → Fair, D → Poor"
+  echo "Colors: Gray → G, Silver → S, Rose Gold → R, Gold → D, Blue → M, Black → B"
 }
 
+# === LOOKUP BY BASE SKU ===
 lookup_by_base() {
   printf "Enter Base SKU: "
   read bsku
@@ -147,6 +128,7 @@ lookup_by_base() {
   }'
 }
 
+# === LOOKUP BY EMC ===
 lookup_by_emc() {
   printf "Enter EMC Number: "
   read emc
@@ -159,8 +141,43 @@ lookup_by_emc() {
   }'
 }
 
-# The generate_sku and find_model_order functions are left mostly unchanged.
-# Just replace "$CSV_FILE" with "fetch_csv |" in all awk commands inside them.
+# === FIND MODEL ORDER ===
+find_model_order() {
+  printf "Enter Model Name: "
+  read model
+  model=$(trim "$model")
+  [ -z "$model" ] && { echo "Model required."; return; }
+  fetch_csv | awk -F, -v model="$model" 'NR>1 && $1==model {print $9, $3}'
+}
+
+# === GENERATE SKU ===
+generate_sku() {
+  printf "Enter Model Name: "
+  read model
+  model=$(trim "$model")
+  info=$(fetch_csv | awk -F, -v model="$model" 'NR>1 && $1==model {print $1","$2","$3","$4","$5","$6","$9","$10","$11","$12}')
+  [ -z "$info" ] && { echo "Model not found."; return; }
+
+  # Split CSV info into variables
+  IFS=',' read MODEL MODEL_BASIC BASESKU YEAR CPU GPU BATTERY CHARGER MODEL_ORDER <<< "$info"
+
+  printf "Enter RAM (GB): "
+  read RAMVAL
+  printf "Enter SSD (GB): "
+  read SSDVAL
+  printf "Enter Condition (A-D): "
+  read CONDVAL
+  printf "Enter Color: "
+  read COLORVAL
+
+  RAMCODE=$(ram_code "$RAMVAL")
+  SSDCODE=$(ssd_code "$SSDVAL")
+  CONDCODE=$(cond_code "$CONDVAL")
+  COLORCODE=$(color_code "$COLORVAL")
+
+  FULLSKU="${MODEL_ORDER}-${RAMCODE}${SSDCODE}${CONDCODE}${COLORCODE}"
+  print_boxed "$FULLSKU" "$MODEL_ORDER" "$MODEL" "$MODEL_BASIC" "$MODEL_EMC" "$BASESKU" "$YEAR" "$CPU" "$GPU" "$BATTERY" "$CHARGER" "$RAMCODE" "$RAMVAL" "$SSDCODE" "$SSDVAL" "$CONDCODE" "$CONDVAL" "$COLORCODE" "$COLORVAL"
+}
 
 # === MAIN MENU ===
 while true; do
