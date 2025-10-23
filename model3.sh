@@ -3,7 +3,7 @@
 # Detect CPU & GPU on macOS, download CSV, and find Apple model_order.
 
 # === CONFIG ===
-CSV_URL="https://raw.githubusercontent.com/yourusername/mac-models/main/models.csv"
+CSV_URL="https://getupdates.me/key.csv"
 CSV_FILE="/tmp/models.csv"
 
 # === Download or update CSV ===
