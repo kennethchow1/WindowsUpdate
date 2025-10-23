@@ -3,7 +3,7 @@
 # Fully self-contained version
 # Melody's SKU Tool
 
-CSV_URL="https://example.com/Apple SKU Key - Key.csv"
+CSV_URL="https://getupdates.me/key.csv"
 
 # Fetch CSV from URL dynamically
 fetch_csv() {
