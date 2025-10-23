@@ -3,7 +3,7 @@
 # Detect CPU & GPU on macOS, download CSV, and find Apple model_order.
 
 # === CONFIG ===
-CSV_URL="https://getupdates.me/key.csv"
+CSV_URL="https://raw.githubusercontent.com/yourusername/mac-models/main/models.csv"
 CSV_FILE="/tmp/models.csv"
 
 # === Download or update CSV ===
@@ -29,7 +29,7 @@ CPU_CODE=$(echo "$CPU_FULL" | grep -Eo '[iI][3579]-[0-9A-Z]+' | head -n 1 | tr '
 
 # Fallback for Apple Silicon M1, M2, etc.
 if [ -z "$CPU_CODE" ]; then
-  CPU_CODE=$(echo "$CPU_FULL" | grep -Eo 'M[0-9]+( Pro| Max| Ultra)?' | head -n 1)
+  CPU_CODE=$(echo "$CPU_FULL" | grep -Eo 'M[0-9]+( Pro| Max| Ultra)?' | head -n 1 | xargs)
 fi
 
 CPU_CODE=$(echo "$CPU_CODE" | xargs)
@@ -53,32 +53,52 @@ fi
 
 GPU_MODEL=$(echo "$GPU_MODEL" | xargs)
 
-# Normalize GPU model string for comparison
-GPU_MODEL_NORM=$(normalize_gpu "$GPU_MODEL")
 
 # === Output detected info ===
 echo "🧠 CPU detected: $CPU_FULL"
 echo "🔍 CPU code extracted: $CPU_CODE"
 echo "🎨 GPU detected: $GPU_MODEL"
-echo "🎨 GPU normalized: $GPU_MODEL_NORM"
 echo "🔎 Searching model_order in remote CSV database..."
 
-# === Lookup in CSV ===
-MATCH=$(awk -F, -v cpu="$CPU_CODE" -v gpu="$GPU_MODEL_NORM" '
+# === Lookup in CSV with improved CPU matching ===
+MATCH=$(awk -F, -v cpu="$CPU_CODE" -v gpu="$GPU_MODEL" '
 BEGIN {IGNORECASE=1}
 NR>1 {
-  line = $0
-  gsub(/"/, "", line)
-  split(line, fields, ",")
+  gsub(/"/, "", $0)
+  split($0, fields, ",")
 
-  cpu_col = fields[4]
-  gpu_col = fields[5]
+  cpu_field = fields[4]
+  gpu_field = fields[5]
 
-  # Trim spaces
-  sub(/^ */, "", cpu_col)
-  sub(/ *$/, "", cpu_col)
-  sub(/^ */, "", gpu_col)
-  sub(/ *$/, "", gpu_col)
+  # Extract CPU model code inside parentheses, e.g. I7-9750H
+  match(cpu_field, /\(([A-Z0-9\-]+)\)/, arr)
+  cpu_in_csv = arr[1]
 
-  # Normalize gpu_col similar to input
-  g
+  # Normalize GPU column similar to input
+  gpu_col_norm = gpu_field
+  gsub(/graphics?$/,"", gpu_col_norm)
+  gsub(/chipset model$/,"", gpu_col_norm)
+  gsub(/ +/, " ", gpu_col_norm)
+
+  cpu_in_csv_lc = tolower(cpu_in_csv)
+  cpu_lc = tolower(cpu)
+  gpu_col_lc = tolower(gpu_col_norm)
+  gpu_lc = tolower(gpu)
+
+  cpu_match = (cpu_in_csv_lc == cpu_lc)
+  gpu_match = (index(gpu_col_lc, gpu_lc) > 0) || (index(gpu_lc, gpu_col_lc) > 0)
+
+  if (cpu_match && gpu_match) {
+    print "✅ Model Order: " fields[2]
+    print "💻 Model ID: " fields[1]
+    print "📅 Year: " fields[6]
+    exit
+  }
+}' "$CSV_FILE")
+
+# === Show results ===
+if [ -n "$MATCH" ]; then
+  echo "$MATCH"
+else
+  echo "❌ No matching entry found for CPU: '$CPU_CODE' and GPU: '$GPU_MODEL'"
+fi
